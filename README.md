@@ -13,4 +13,4 @@ Example command: `python edledit.py "My Video.mp4" "My Video.edl" "My Video edit
 The edits listed in the EDL file will be used to create an edited version of the original video.
 See [here](http://www.mplayerhq.hu/DOCS/HTML/en/edl.html) for instructions on making an EDL file.
 
-Currently, this script supports actions 1 and 2 (Mute, and Cut Video).
+Currently, this script supports actions 1 and 0 (Mute, and Cut Video).
