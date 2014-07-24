@@ -1,0 +1,212 @@
+#! /usr/bin/env python
+
+import os, sys, curses, edl
+from moviepy.editor import *
+
+num1 = 0
+num2 = 0
+action2 = 0
+
+if os.system("echo '' | nc localhost 12000 1>/dev/null") != 0:
+    os.system("vlc -q --extraintf rc --rc-host localhost:12000 2>/dev/null &")
+
+
+def rewind():
+    os.system("echo 'prev' | nc localhost 12000 1>/dev/null")
+    os.system("echo 'play' | nc localhost 12000 1>/dev/null")
+    
+def play_pause():
+    os.system("echo 'pause' | nc localhost 12000 1>/dev/null")
+    
+def stop():
+    os.system("echo 'stop' | nc localhost 12000 1>/dev/null")
+
+def reload():
+    os.system("echo 'clear' | nc localhost 12000 1>/dev/null")
+    os.system("echo 'add /tmp/tweak.mp4' | nc localhost 12000 1>/dev/null")
+    
+def stdout_off():
+    _stderr = sys.stderr
+    _stdout = sys.stdout
+    null = open(os.devnull,'wb')
+    sys.stdout = sys.stderr = null
+    
+def stdout_on():
+    sys.stderr = _stderr
+    sys.stdout = _stdout
+
+
+videofile = sys.argv[1]
+edlfile = sys.argv[2]
+edlfile_read = open(edlfile, 'r')
+estruct = edl.struct(edlfile_read)
+editline = 0
+
+#start = float(raw_input('Start: '))
+#end = float(raw_input('End: '))
+#time1 = float(raw_input('time1: '))
+#time2 = float(raw_input('time2: '))
+#action = float(raw_input('Action (1/0): '))
+
+stdout_off()
+
+stdscr = curses.initscr()
+curses.cbreak()
+curses.noecho()
+curses.curs_set(0)
+stdscr.keypad(1)
+ 
+
+def createClip(start, end, time1, time2, action):
+
+    clip1 = VideoFileClip(videofile).subclip(start,time1)
+
+    if action == 1:
+        clip2 = VideoFileClip(videofile, audio = False).subclip(time1,time2)
+        clip3 = VideoFileClip(videofile).subclip(time2,end)
+        clips = concatenate([clip1,clip2,clip3])
+    else:
+        clip3 = VideoFileClip(videofile).subclip(time2,end)
+        clips = concatenate([clip1,clip3])
+
+
+    clips.to_videofile("/tmp/tweak.mp4", codec="mpeg4")
+    reload()
+
+stdscr.addstr(5, 30, "Reloading edit...")
+stdscr.refresh()
+#createClip(start, end, time1, time2, action)
+
+stdscr.addstr(0,2,"EDL Kit: Tweaker")
+stdscr.addstr(8,2,"Keyboard Controls:")
+stdscr.addstr(9,2,"s,f  - Move Time1 left and right.")
+stdscr.addstr(10,2,"j,l - Move Time2 left and right.")
+stdscr.addstr(11,2,"1,0 - Switch between action 1 (mute) and 0 (cut).")
+stdscr.addstr(12,2,"[,] - Move up and down edl file entries.")
+stdscr.addstr(13,2,"t   - Transfer edits to edl structure.")
+stdscr.addstr(14,2,"r   - Recompile edits and display video.")
+stdscr.addstr(15,2,"u,p - Rewind or pause the video.")
+stdscr.addstr(16,2,"q   - Quit")
+
+stdscr.refresh()
+
+
+
+
+def show_struct():
+    linenum = 0
+    while linenum <= len(estruct.time1)-1:
+        stdscr.addstr(linenum+2, 58, "                               ")
+        if linenum == editline:
+            stdscr.addstr(linenum+2, 68, "= "+estruct.time1[linenum]+" "+estruct.time2[linenum]+" "+estruct.action[linenum]+" =")
+        else:
+            stdscr.addstr(linenum+2, 70, estruct.time1[linenum]+" "+estruct.time2[linenum]+" "+estruct.action[linenum])
+
+        linenum = linenum + 1
+        
+    global num1
+    num1 = float(estruct.time1[editline])
+    global num2    
+    num2 = float(estruct.time2[editline])
+    global action2
+    action2 = float(estruct.action[editline])
+    stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
+    stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
+    
+    if action2 == 1:
+        stdscr.addstr(5, 30, "Set to mute mode.")
+    else:
+        stdscr.addstr(5, 30, "Set to cut mode. ")
+        
+    stdscr.refresh()
+
+show_struct()
+#stdout_off()
+
+#if action2 == 1:
+#    stdscr.addstr(5, 30, "Set to mute mode.")
+#else:
+#    stdscr.addstr(5, 30, "Set to cut mode. ")
+
+stdscr.refresh()
+
+key = ''
+while key != ord('q'):
+    key = stdscr.getch()
+    stdscr.refresh()
+    if key == ord('s'):
+        global num1
+        num1 = num1-0.01
+        stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
+        stdscr.refresh()
+    elif key == ord('f'):
+        global num1
+        num1 = num1+0.01
+        stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
+        stdscr.refresh()
+    elif key == ord('j'):
+        global num2
+        num2 = num2-0.01
+        stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
+        stdscr.refresh()
+    elif key == ord('l'):
+        global num2
+        num2 = num2+0.01
+        stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
+        stdscr.refresh()
+    elif key == ord('1'):
+        stdscr.addstr(5, 30, "Set to mute mode.")
+        global action2
+        action2 = 1
+        stdscr.refresh()
+    elif key == ord('0'):
+        stdscr.addstr(5, 30, "Set to cut mode. ")
+        global action2
+        action2 = 0
+        stdscr.refresh()
+    elif key == ord('r'):
+        stdscr.addstr(5, 30, "Reloading edit...")
+        stdscr.refresh()        
+        createClip(num1-3, num2+3, num1, num2, action2)
+        if action2 == 1:
+            stdscr.addstr(5, 30, "Set to mute mode.")
+        else:
+            stdscr.addstr(5, 30, "Set to cut mode. ")
+        stdscr.refresh()        
+    elif key == ord('u'):
+        rewind()
+    elif key == ord('p'):
+        play_pause()
+    elif key == ord('['):
+        if editline != 0:
+            editline = editline-1
+            show_struct()
+    elif key == ord(']'):
+        if editline != len(estruct.time1)-1:
+            editline = editline+1
+            show_struct()
+    elif key == curses.KEY_UP:
+        if editline != 0:
+            editline = editline-1
+            show_struct()
+    elif key == curses.KEY_DOWN:
+        if editline != len(estruct.time1)-1:
+            editline = editline+1
+            show_struct()
+    elif key == ord('t'):
+        estruct.time1[editline] = str(num1)
+        estruct.time2[editline] = str(num2)
+        estruct.action[editline] = str(int(action2))
+        stdscr.addstr(0,68,"     ")
+        show_struct()
+    elif key == ord('w'):
+        edlfile_write = open(edlfile, 'w')
+        ewriter = edl.writer(edlfile_write)
+        ewriter.write_struct(estruct)
+        edlfile_write.close()
+        stdscr.addstr(0,68,"Saved")
+        stdscr.refresh()
+        
+ 
+stop()
+curses.endwin()
