@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 
-import os, sys, curses, edl
+import os, sys, curses, edl, socket
 from moviepy.editor import *
 
 num1 = 0
@@ -10,16 +10,20 @@ action2 = 0
 if os.system("echo '' | nc localhost 12000 1>/dev/null") != 0:
     os.system("vlc -q --extraintf rc --rc-host localhost:12000 2>/dev/null &")
 
+vlc = socket.socket()
+vlc.connect(('127.0.0.1', 12000))
 
 def rewind():
     os.system("echo 'prev' | nc localhost 12000 1>/dev/null")
     os.system("echo 'play' | nc localhost 12000 1>/dev/null")
     
 def play_pause():
-    os.system("echo 'pause' | nc localhost 12000 1>/dev/null")
+#    os.system("echo 'pause' | nc localhost 12000 1>/dev/null")
+    vlc.send('pause\n')
     
 def stop():
     os.system("echo 'stop' | nc localhost 12000 1>/dev/null")
+    vlc.close()
 
 def reload():
     os.system("echo 'clear' | nc localhost 12000 1>/dev/null")
@@ -42,12 +46,6 @@ edlfile_read = open(edlfile, 'r')
 estruct = edl.struct(edlfile_read)
 editline = 0
 
-#start = float(raw_input('Start: '))
-#end = float(raw_input('End: '))
-#time1 = float(raw_input('time1: '))
-#time2 = float(raw_input('time2: '))
-#action = float(raw_input('Action (1/0): '))
-
 stdout_off()
 
 stdscr = curses.initscr()
@@ -65,10 +63,12 @@ def createClip(start, end, time1, time2, action):
         clip2 = VideoFileClip(videofile, audio = False).subclip(time1,time2)
         clip3 = VideoFileClip(videofile).subclip(time2,end)
         clips = concatenate([clip1,clip2,clip3])
-    else:
+    elif action == 0:
         clip3 = VideoFileClip(videofile).subclip(time2,end)
         clips = concatenate([clip1,clip3])
-
+    else:
+        clips = VideoFileClip(videofile).subclip(start,end)
+        
 
     clips.to_videofile("/tmp/tweak.mp4", codec="mpeg4")
     reload()
@@ -109,20 +109,22 @@ def show_struct():
     global num2    
     num2 = float(estruct.time2[editline])
     global action2
-    action2 = float(estruct.action[editline])
+    action2 = str(estruct.action[editline])
     stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
     stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
     
-    if action2 == 1:
+    if action2 == "1":
         stdscr.addstr(5, 30, "Set to mute mode.")
-    else:
+    elif action2 == "0":
         stdscr.addstr(5, 30, "Set to cut mode. ")
+    else:
+        stdscr.addstr(5, 30, "Set to disabled. ")
         
     stdscr.refresh()
 
 show_struct()
-#stdout_off()
 
+#stdout_on()
 #if action2 == 1:
 #    stdscr.addstr(5, 30, "Set to mute mode.")
 #else:
@@ -164,14 +166,21 @@ while key != ord('q'):
         global action2
         action2 = 0
         stdscr.refresh()
+    elif key == ord('-'):
+        stdscr.addstr(5, 30, "Set to disabled. ")
+        global action2
+        action2 = "-"
+        stdscr.refresh()
     elif key == ord('r'):
         stdscr.addstr(5, 30, "Reloading edit...")
         stdscr.refresh()        
         createClip(num1-3, num2+3, num1, num2, action2)
         if action2 == 1:
             stdscr.addstr(5, 30, "Set to mute mode.")
-        else:
+        elif action2 == 0:
             stdscr.addstr(5, 30, "Set to cut mode. ")
+        else:
+            stdscr.addstr(5, 30, "Set to disabled. ")
         stdscr.refresh()        
     elif key == ord('u'):
         rewind()
@@ -196,7 +205,7 @@ while key != ord('q'):
     elif key == ord('t'):
         estruct.time1[editline] = str(num1)
         estruct.time2[editline] = str(num2)
-        estruct.action[editline] = str(int(action2))
+        estruct.action[editline] = str(action2)
         stdscr.addstr(0,68,"     ")
         show_struct()
     elif key == ord('w'):

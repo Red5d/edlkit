@@ -16,10 +16,14 @@ class struct(object):
         self.action = list()
 
         for line in self.edlfile:
-             if len(line.split('      ')) == 3:
-                 self.time1.append(line.split("      ")[0])
-                 self.time2.append(line.split("      ")[1])
-                 self.action.append(line.split("      ")[2].split('\n')[0])
+             if len(line.split()) == 3:
+                 self.time1.append(line.split()[0])
+                 self.time2.append(line.split()[1])
+                 self.action.append(line.split()[2].split('\n')[0])
+             elif len(line.split()) == 2:
+                 self.time1.append(line.split()[0])
+                 self.time2.append(line.split()[1])
+                 self.action.append("-")
 
 
 class writer(object):
@@ -38,7 +42,11 @@ class writer(object):
         self.time1 = estruct.time1
         self.time2 = estruct.time2
         self.action = estruct.action
+            
         for x in range(0, len(self.time1)):
+            if self.action[x] == "-":
+                self.action[x] = ""
+                
             self.edlfile.write(str(self.time1[x])+"      "+str(self.time2[x])+"      "+str(self.action[x])+"\n")
         
         
