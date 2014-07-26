@@ -92,14 +92,18 @@ stdscr.refresh()
 
 stdscr.addstr(0,2,"EDL Kit: Tweaker")
 stdscr.addstr(8,2,"Keyboard Controls:")
-stdscr.addstr(9,2,"s,f  - Move Time1 left and right.")
-stdscr.addstr(10,2,"j,l - Move Time2 left and right.")
-stdscr.addstr(11,2,"1,0 - Switch between action 1 (mute) and 0 (cut).")
-stdscr.addstr(12,2,"[,] - Move up and down edl file entries.")
-stdscr.addstr(13,2,"t   - Transfer edits to edl structure.")
-stdscr.addstr(14,2,"r   - Recompile edits and display video.")
-stdscr.addstr(15,2,"u,p - Rewind or pause the video.")
-stdscr.addstr(16,2,"q   - Quit")
+stdscr.addstr(9,2,"s,f    Move Time1 left and right by 0.01 seconds.")
+stdscr.addstr(10,2,"z,c    Move Time1 left and right by 0.10 seconds.")
+stdscr.addstr(11,2,"j,l    Move Time2 left and right by 0.01 seconds.")
+stdscr.addstr(12,2,"m,.    Move Time2 left and right by 0.10 seconds.")
+stdscr.addstr(13,2,"1,0,-  Switch between action 1 (mute), 0 (cut),")
+stdscr.addstr(14,2,"       and - (disable).")
+stdscr.addstr(15,2,"[,]    Move up and down edl file entries.")
+stdscr.addstr(16,2,"       You can also use the arrow keys.")
+stdscr.addstr(17,2,"t      Transfer edits to edl structure.")
+stdscr.addstr(18,2,"r      Recompile edits and display video.")
+stdscr.addstr(19,2,"u,p    Rewind or pause the video.")
+stdscr.addstr(20,2,"q      Quit")
 
 stdscr.refresh()
 
@@ -149,9 +153,19 @@ while key != ord('q'):
         num1 = num1-0.01
         stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
         stdscr.refresh()
+    elif key == ord('z'):
+        global num1
+        num1 = num1-0.10
+        stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
+        stdscr.refresh()
     elif key == ord('f'):
         global num1
         num1 = num1+0.01
+        stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
+        stdscr.refresh()
+    elif key == ord('c'):
+        global num1
+        num1 = num1+0.10
         stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
         stdscr.refresh()
     elif key == ord('j'):
@@ -159,9 +173,19 @@ while key != ord('q'):
         num2 = num2-0.01
         stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
         stdscr.refresh()
+    elif key == ord('m'):
+        global num2
+        num2 = num2-0.10
+        stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
+        stdscr.refresh()
     elif key == ord('l'):
         global num2
         num2 = num2+0.01
+        stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
+        stdscr.refresh()
+    elif key == ord('.'):
+        global num2
+        num2 = num2+0.10
         stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
         stdscr.refresh()
     elif key == ord('1'):
