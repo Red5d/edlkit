@@ -1,39 +1,53 @@
 #! /usr/bin/env python
 
-import os, sys, curses, edl, socket
+import os, sys, curses, edl, socket, subprocess, time
 from moviepy.editor import *
 
 num1 = 0
 num2 = 0
 action2 = 0
 
-if os.system("echo '' | nc localhost 12000 1>/dev/null") != 0:
-    os.system("vlc -q --extraintf rc --rc-host localhost:12000 2>/dev/null &")
-
-vlc = socket.socket()
-vlc.connect(('127.0.0.1', 12000))
-
-def rewind():
-    os.system("echo 'prev' | nc localhost 12000 1>/dev/null")
-    os.system("echo 'play' | nc localhost 12000 1>/dev/null")
-    
-def play_pause():
-#    os.system("echo 'pause' | nc localhost 12000 1>/dev/null")
-    vlc.send('pause\n')
-    
-def stop():
-    os.system("echo 'stop' | nc localhost 12000 1>/dev/null")
-    vlc.close()
-
-def reload():
-    os.system("echo 'clear' | nc localhost 12000 1>/dev/null")
-    os.system("echo 'add /tmp/tweak.mp4' | nc localhost 12000 1>/dev/null")
-    
 def stdout_off():
     _stderr = sys.stderr
     _stdout = sys.stdout
     null = open(os.devnull,'wb')
     sys.stdout = sys.stderr = null
+    
+stdout_off()
+
+try:
+    from subprocess import DEVNULL
+except ImportError:
+#    import os
+    DEVNULL = open(os.devnull, 'wb')
+
+vlc = socket.socket()
+testConn = vlc.connect_ex(('127.0.0.1', 12000))
+if testConn > 0:
+    subprocess.Popen(["vlc","-q","--extraintf","rc","--rc-host","localhost:12000"], stdout=DEVNULL, stderr=subprocess.STDOUT)
+    print "Starting VLC..."
+    while testConn > 0:
+        testConn = vlc.connect_ex(('127.0.0.1', 12000))
+        time.sleep(0.5)
+        
+else:
+    vlc.connect_ex(('127.0.0.1', 12000))
+
+def rewind():
+    vlc.send('prev\n')
+    vlc.send('play\n')
+    
+def play_pause():
+    vlc.send('pause\n')
+    
+def stop():
+    vlc.send('stop\n')
+    vlc.close()
+
+def reload():
+    vlc.send('clear\n')
+    vlc.send('add /tmp/tweak.mp4\n')
+    
     
 def stdout_on():
     sys.stderr = _stderr
@@ -46,7 +60,6 @@ edlfile_read = open(edlfile, 'r')
 estruct = edl.struct(edlfile_read)
 editline = 0
 
-stdout_off()
 
 stdscr = curses.initscr()
 curses.cbreak()
@@ -56,14 +69,15 @@ stdscr.keypad(1)
  
 
 def createClip(start, end, time1, time2, action):
+    print "Action: "+action
 
     clip1 = VideoFileClip(videofile).subclip(start,time1)
 
-    if action == 1:
+    if str(action) == "1":
         clip2 = VideoFileClip(videofile, audio = False).subclip(time1,time2)
         clip3 = VideoFileClip(videofile).subclip(time2,end)
         clips = concatenate([clip1,clip2,clip3])
-    elif action == 0:
+    elif str(action) == "0":
         clip3 = VideoFileClip(videofile).subclip(time2,end)
         clips = concatenate([clip1,clip3])
     else:
@@ -75,7 +89,6 @@ def createClip(start, end, time1, time2, action):
 
 stdscr.addstr(5, 30, "Reloading edit...")
 stdscr.refresh()
-#createClip(start, end, time1, time2, action)
 
 stdscr.addstr(0,2,"EDL Kit: Tweaker")
 stdscr.addstr(8,2,"Keyboard Controls:")
@@ -124,11 +137,6 @@ def show_struct():
 
 show_struct()
 
-#stdout_on()
-#if action2 == 1:
-#    stdscr.addstr(5, 30, "Set to mute mode.")
-#else:
-#    stdscr.addstr(5, 30, "Set to cut mode. ")
 
 stdscr.refresh()
 
@@ -175,9 +183,9 @@ while key != ord('q'):
         stdscr.addstr(5, 30, "Reloading edit...")
         stdscr.refresh()        
         createClip(num1-3, num2+3, num1, num2, action2)
-        if action2 == 1:
+        if str(action2) == "1":
             stdscr.addstr(5, 30, "Set to mute mode.")
-        elif action2 == 0:
+        elif str(action2) == "0":
             stdscr.addstr(5, 30, "Set to cut mode. ")
         else:
             stdscr.addstr(5, 30, "Set to disabled. ")
