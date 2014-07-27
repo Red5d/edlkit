@@ -3,9 +3,9 @@ EDL Kit
 
 Dependencies: A recent [ffmpeg](http://www.ffmpeg.org/download.html), the [MoviePy](https://github.com/Zulko/moviepy) Python module, and VLC (for edltweak).
 
-Tools:
 
-edledit:
+##edledit
+
 This script takes in as arguments:
 * A video file.
 * An EDL file.
@@ -19,7 +19,8 @@ See [here](http://www.mplayerhq.hu/DOCS/HTML/en/edl.html) for instructions on ma
 Currently, this script supports actions 1 and 0 (Mute, and Cut Video).
 
 
-edltweak:
+##edltweak
+
 This script takes in as arguments:
 * A video file.
 * An EDL file.
