@@ -101,9 +101,10 @@ stdscr.addstr(14,2,"       and - (disable).")
 stdscr.addstr(15,2,"[,]    Move up and down edl file entries.")
 stdscr.addstr(16,2,"       You can also use the arrow keys.")
 stdscr.addstr(17,2,"t      Transfer edits to edl structure.")
-stdscr.addstr(18,2,"r      Recompile edits and display video.")
-stdscr.addstr(19,2,"u,p    Rewind or pause the video.")
-stdscr.addstr(20,2,"q      Quit")
+stdscr.addstr(18,2,"w      Write edits to edl file.")
+stdscr.addstr(19,2,"r      Recompile edits and display video.")
+stdscr.addstr(20,2,"u,p    Rewind or pause the video.")
+stdscr.addstr(21,2,"q      Quit")
 
 stdscr.refresh()
 
