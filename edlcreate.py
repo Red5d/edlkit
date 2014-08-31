@@ -43,16 +43,33 @@ def play_pause():
 def stop():
     vlc.send('stop\n')
     vlc.close()
-    
+
+global result    
+result = ""
 def getTime():
-    vlc.recv(100)
+    play_pause()
+    play_pause()
     vlc.send('get_time\n')
-    return vlc.recv(100).split('\r')[0]
+    global result
+    result = vlc.recv(100).split('\r')
+    
+    while '> ' in result[0]:
+        vlc.send('get_time\n')
+        global result
+        result = vlc.recv(100).split('\r')
+    
+    if len(result) == 3:
+        time = result[1].split(' ')[1]
+    else:
+        time = result[0]
+
+    return time
+    
     
 def addEdit():
     time1 = float(int(getTime()))
-    estruct.time1.append(str(time1-1))
-    estruct.time2.append(str(time1-0.5))
+    estruct.time1.append(time1-1)
+    estruct.time2.append(time1-0.5)
     estruct.action.append(1)
     estruct.time1.sort()
     estruct.time2.sort()
@@ -61,11 +78,7 @@ def showStruct():
     linenum = 0
     while linenum <= len(estruct.time1)-1:
         stdscr.addstr(linenum+2, 58, "                               ")
-        if linenum == editline:
-            stdscr.addstr(linenum+2, 68, "= "+estruct.time1[linenum]+" =")
-        else:
-            stdscr.addstr(linenum+2, 70, estruct.time1[linenum])
-
+        stdscr.addstr(linenum+2, 70, str(estruct.time1[linenum]))
         linenum = linenum + 1
         
     stdscr.refresh()
@@ -83,11 +96,9 @@ vlc.send('add '+videofile+'\n')
 edlfile = sys.argv[2]
 editline = 0
 
-if os.path.isfile(edlfile):
-    edlfile_read = open(edlfile, 'r')
-    estruct = edl.struct(edlfile_read)
-else:
-    estruct = edl.struct()
+# Open specified edl file. (create it if it doesn't exist)
+edlfile_read = open(edlfile, 'a+')
+estruct = edl.struct(edlfile_read)
     
 
 stdscr = curses.initscr()
