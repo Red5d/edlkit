@@ -3,11 +3,8 @@
 import os, sys, curses, edl, socket, subprocess, time
 from moviepy.editor import *
 
-global num1
 num1 = 0
-global num2
 num2 = 0
-global action2
 action2 = 0
 
 def stdout_off():
@@ -125,11 +122,11 @@ def show_struct():
 
         linenum = linenum + 1
         
-    #global num1
+    global num1
     num1 = float(estruct.time1[editline])
-    #global num2    
+    global num2    
     num2 = float(estruct.time2[editline])
-    #global action2
+    global action2
     action2 = str(estruct.action[editline])
     stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
     stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
@@ -153,58 +150,58 @@ while key != ord('q'):
     key = stdscr.getch()
     stdscr.refresh()
     if key == ord('s'):
-        #global num1
+        global num1
         num1 = num1-0.01
         stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
         stdscr.refresh()
     elif key == ord('z'):
-        #global num1
+        global num1
         num1 = num1-0.10
         stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
         stdscr.refresh()
     elif key == ord('f'):
-        #global num1
+        global num1
         num1 = num1+0.01
         stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
         stdscr.refresh()
     elif key == ord('c'):
-        #global num1
+        global num1
         num1 = num1+0.10
         stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
         stdscr.refresh()
     elif key == ord('j'):
-        #global num2
+        global num2
         num2 = num2-0.01
         stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
         stdscr.refresh()
     elif key == ord('m'):
-        #global num2
+        global num2
         num2 = num2-0.10
         stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
         stdscr.refresh()
     elif key == ord('l'):
-        #global num2
+        global num2
         num2 = num2+0.01
         stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
         stdscr.refresh()
     elif key == ord('.'):
-        #global num2
+        global num2
         num2 = num2+0.10
         stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
         stdscr.refresh()
     elif key == ord('1'):
         stdscr.addstr(5, 30, "Set to mute mode.")
-        #global action2
+        global action2
         action2 = 1
         stdscr.refresh()
     elif key == ord('0'):
         stdscr.addstr(5, 30, "Set to cut mode. ")
-        #global action2
+        global action2
         action2 = 0
         stdscr.refresh()
     elif key == ord('-'):
         stdscr.addstr(5, 30, "Set to disabled. ")
-        #global action2
+        global action2
         action2 = "-"
         stdscr.refresh()
     elif key == ord('r'):
