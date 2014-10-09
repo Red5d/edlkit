@@ -3,6 +3,7 @@ EDL Kit
 
 Dependencies: A recent [ffmpeg](http://www.ffmpeg.org/download.html), the [MoviePy](https://github.com/Zulko/moviepy) Python module, and VLC (for edltweak).
 
+I'm developing this on Linux, but working on full Windows support in the future. Currently, if you have ffmpeg and the MoviePy Python module set up on Windows, the edledit script works.
 
 ##edledit
 
