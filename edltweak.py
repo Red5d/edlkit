@@ -41,7 +41,7 @@ def play_pause():
     vlc.send('pause\n')
     
 def stop():
-    vlc.send('stop\n')
+    vlc.send('shutdown\n')
     vlc.close()
 
 def reload():
