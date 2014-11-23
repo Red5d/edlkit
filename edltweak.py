@@ -47,7 +47,10 @@ def stop():
 def reload():
     vlc.send('clear\n')
     vlc.send('add /tmp/tweak.mp4\n')
-    
+
+def load_original():
+    vlc.send('clear\n')
+    vlc.send('add '+sys.argv[1]+'\n')    
     
 def stdout_on():
     sys.stderr = _stderr
@@ -104,7 +107,8 @@ stdscr.addstr(17,2,"t      Transfer edits to edl structure.")
 stdscr.addstr(18,2,"w      Write edits to edl file.")
 stdscr.addstr(19,2,"r      Recompile edits and display video.")
 stdscr.addstr(20,2,"u,p    Rewind or pause the video.")
-stdscr.addstr(21,2,"q      Quit")
+stdscr.addstr(21,2,"o      Play the source video file without changes.")
+stdscr.addstr(22,2,"q      Quit")
 
 stdscr.refresh()
 
@@ -219,6 +223,8 @@ while key != ord('q'):
         rewind()
     elif key == ord('p'):
         play_pause()
+    elif key == ord('o'):
+        load_original()
     elif key == ord('['):
         if editline != 0:
             editline = editline-1
