@@ -45,5 +45,5 @@ videoLength = VideoFileClip(sys.argv[1]).duration
 clip = VideoFileClip(sys.argv[1]).subclip(prevTime,videoLength)
 print "created ending clip from " + str(prevTime) + " to " + str(videoLength)
 clips = concatenate([clips,clip])
-clips.to_videofile(sys.argv[3])
+clips.write_videofile(sys.argv[3], fps=23.976, codec="libx264", threads=4)
 

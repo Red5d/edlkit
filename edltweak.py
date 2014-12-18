@@ -87,7 +87,7 @@ def createClip(start, end, time1, time2, action):
         clips = VideoFileClip(videofile).subclip(start,end)
         
 
-    clips.write_videofile("/tmp/tweak.mp4", codec="libx264", fps=24, preset="ultrafast", threads=4)
+    clips.write_videofile("/tmp/tweak.mp4", codec="libx264", fps=24, preset="ultrafast", threads=2)
     reload()
 
 stdscr.addstr(5, 30, "Reloading edit...")
