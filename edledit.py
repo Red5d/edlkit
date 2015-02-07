@@ -23,7 +23,7 @@ for line in row:
 
     clip = VideoFileClip(sys.argv[1]).subclip(prevTime,nextTime)
     clips = concatenate([clips,clip])
-    print "created subclip from " + str(prevTime) + " to " + str(nextTime)
+    print("created subclip from " + str(prevTime) + " to " + str(nextTime))
 
     prevTime = nextTime
     nextTime = time2
@@ -31,9 +31,9 @@ for line in row:
     if action == "1":
         clip = VideoFileClip(sys.argv[1], audio = False).subclip(prevTime,nextTime)
         clips = concatenate([clips,clip])
-        print "created muted subclip from " + str(prevTime) + " to " + str(nextTime)
+        print("created muted subclip from " + str(prevTime) + " to " + str(nextTime))
     elif action == "0":
-        print "Muted video." #do nothing (video muted)
+        print("Muted video.") #do nothing (video muted)
     else:
         clip = VideoFileClip(sys.argv[1]).subclip(prevTime,nextTime)
         clips = concatenate([clips,clip])
@@ -43,7 +43,7 @@ for line in row:
 
 videoLength = VideoFileClip(sys.argv[1]).duration
 clip = VideoFileClip(sys.argv[1]).subclip(prevTime,videoLength)
-print "created ending clip from " + str(prevTime) + " to " + str(videoLength)
+print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
 clips = concatenate([clips,clip])
-clips.write_videofile(sys.argv[3], fps=23.976, codec="libx264", threads=4)
+clips.write_videofile(sys.argv[3], fps=24, codec="libx264", threads=4)
 
