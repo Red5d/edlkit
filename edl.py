@@ -4,7 +4,7 @@ class reader(object):
         self.edlfile = edlfile
 
     def read(self):
-        print self.edlfile.read()
+        print(self.edlfile.read())
 
 
 class struct(object):
