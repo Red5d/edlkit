@@ -1,13 +1,17 @@
 from moviepy.editor import *
-import sys
+import sys, os, re, tempfile
 
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
     print(str('Usage: python edledit.py "Video File.mp4" "EDL File.edl" "Edited Video File.mp4" [threads] [preset] [bitrate]'))
     print(str(''))
     print(str('Threads: Optional. A number between 1 and the number of processor cores you have. Defaults to 2.'))
+    print(str('         Determines how many processor cores will be used when creating the edited file.'))
+    print(str(''))
     print(str('Preset:  Optional. Changes how well-optimized the compression is. Affects speed and file size, not quality.'))
     print(str('         Choices: ultrafast, superfast, fast, medium, slow, superslow. Defaults to "medium".'))
-    print(str('Bitrate: Optional. Adjusts the bitrate of the video. Defaults to "2000k".'))
+    print(str(''))
+    print(str('Bitrate: Optional. Adjusts the bitrate of the video. Original video bitrate determined automatically.'))
+    print(str('         Defaults to "2000k" if automatic detection fails and "bitrate" parameter is not specified.'))
     print(str(''))
     exit()
 
@@ -15,18 +19,32 @@ if len(sys.argv) < 3:
 file = open(sys.argv[2], 'r')
 row = file.readlines()
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 5:
     threadNum = 2
 else:
     threadNum = sys.argv[4]
 
-if len(sys.argv) < 5:
+if len(sys.argv) < 6:
     ffmpegPreset = "medium"
 else:
     ffmpegPreset = sys.argv[5]
 
-if len(sys.argv) < 6:
-    ffmpegBitrate = str("2000k")
+if len(sys.argv) < 7:
+    try:
+        tmpf = tempfile.NamedTemporaryFile()
+        os.system("ffmpeg -i \"%s\" 2> %s" % (sys.argv[1], tmpf.name))
+        lines = tmpf.readlines()
+        tmpf.close()
+
+        for l in lines:
+            l = l.strip()
+            if l.startswith(b'Duration'):
+                ffmpegBitrate = (re.search(b"bitrate: (\d+ kb/s)", l).group(0).split(b':')[1].strip().split(b' ')[0]).decode('utf-8')+"k"
+    except:
+        ffmpegBitrate = str("2000k")
+
+    print("Using original video bitrate: "+ffmpegBitrate)
+
 else:
     ffmpegBitrate = str(sys.argv[6])
 
