@@ -7,7 +7,7 @@ if len(sys.argv) < 3:
     print(str('Threads: Optional. A number between 1 and the number of processor cores you have. Defaults to 2.'))
     print(str('Preset:  Optional. Changes how well-optimized the compression is. Affects speed and file size, not quality.'))
     print(str('         Choices: ultrafast, superfast, fast, medium, slow, superslow. Defaults to "medium".'))
-    print(str('Bitrate: Optional. Adjusts the bitrate of the video. Example: "2000k". Defaults to "50000k" (maximum bitrate from original).'))
+    print(str('Bitrate: Optional. Adjusts the bitrate of the video. Defaults to "2000k".'))
     print(str(''))
     exit()
 
@@ -26,7 +26,7 @@ else:
     ffmpegPreset = sys.argv[5]
 
 if len(sys.argv) < 6:
-    ffmpegBitrate = str("50000k")
+    ffmpegBitrate = str("2000k")
 else:
     ffmpegBitrate = str(sys.argv[6])
 
