@@ -29,24 +29,30 @@ if len(sys.argv) < 6:
 else:
     ffmpegPreset = sys.argv[5]
 
+try:
+    tmpf = tempfile.NamedTemporaryFile()
+    os.system("ffmpeg -i \"%s\" 2> %s" % (sys.argv[1], tmpf.name))
+    lines = tmpf.readlines()
+    tmpf.close()
+
+    for l in lines:
+        l = l.strip()
+        if l.startswith(b'Duration'):
+            videoBitrate = (re.search(b"bitrate: (\d+ kb/s)", l).group(0).split(b':')[1].strip().split(b' ')[0]).decode('utf-8')+"k"
+
+        if l.startswith(b'Stream #0:1'):
+            audioBitrate = (re.search(b', (\d+ kb/s)', l).group(1)).strip().split(b' ')[0].decode('utf-8').decode('utf-8')+"k"
+
+except:
+    videoBitrate = str("2000k")
+    audiobitrate = str("300k")
+
+
 if len(sys.argv) < 7:
-    try:
-        tmpf = tempfile.NamedTemporaryFile()
-        os.system("ffmpeg -i \"%s\" 2> %s" % (sys.argv[1], tmpf.name))
-        lines = tmpf.readlines()
-        tmpf.close()
-
-        for l in lines:
-            l = l.strip()
-            if l.startswith(b'Duration'):
-                ffmpegBitrate = (re.search(b"bitrate: (\d+ kb/s)", l).group(0).split(b':')[1].strip().split(b' ')[0]).decode('utf-8')+"k"
-    except:
-        ffmpegBitrate = str("2000k")
-
-    print("Using original video bitrate: "+ffmpegBitrate)
-
+    videoBitrate = str(sys.argv[6])
 else:
-    ffmpegBitrate = str(sys.argv[6])
+    print("Using original video bitrate: "+videoBitrate)
+    
 
 clipNum = 1
 global prevTime
@@ -84,4 +90,4 @@ videoLength = VideoFileClip(sys.argv[1]).duration
 clip = VideoFileClip(sys.argv[1]).subclip(prevTime,videoLength)
 print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
 clips = concatenate([clips,clip])
-clips.write_videofile(sys.argv[3], codec="libx264", fps=24, bitrate=ffmpegBitrate, threads=threadNum, preset=ffmpegPreset)
+clips.write_videofile(sys.argv[3], codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset)
