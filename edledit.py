@@ -41,18 +41,18 @@ try:
             videoBitrate = (re.search(b"bitrate: (\d+ kb/s)", l).group(0).split(b':')[1].strip().split(b' ')[0]).decode('utf-8')+"k"
 
         if l.startswith(b'Stream #0:1'):
-            audioBitrate = (re.search(b', (\d+ kb/s)', l).group(1)).strip().split(b' ')[0].decode('utf-8').decode('utf-8')+"k"
+            audioBitrate = (re.search(b', (\d+ kb/s)', l).group(1)).strip().split(b' ')[0].decode('utf-8')+"k"
 
 except:
     videoBitrate = str("2000k")
     audiobitrate = str("300k")
 
 
-if len(sys.argv) < 7:
+if len(sys.argv) == 7:
     videoBitrate = str(sys.argv[6])
 else:
     print("Using original video bitrate: "+videoBitrate)
-    
+
 
 clipNum = 1
 global prevTime
