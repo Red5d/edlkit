@@ -1,37 +1,31 @@
 from moviepy.editor import *
-import sys, os, re, tempfile
+import sys, os, re, tempfile, argparse
 
-if len(sys.argv) < 4:
-    print(str('Usage: python edledit.py "Video File.mp4" "EDL File.edl" "Edited Video File.mp4" [threads] [preset] [bitrate]'))
-    print(str(''))
-    print(str('Threads: Optional. A number between 1 and the number of processor cores you have. Defaults to 2.'))
-    print(str('         Determines how many processor cores will be used when creating the edited file.'))
-    print(str(''))
-    print(str('Preset:  Optional. Changes how well-optimized the compression is. Affects speed and file size, not quality.'))
-    print(str('         Choices: ultrafast, superfast, fast, medium, slow, superslow. Defaults to "medium".'))
-    print(str(''))
-    print(str('Bitrate: Optional. Adjusts the bitrate of the video. Original video bitrate determined automatically.'))
-    print(str('         Defaults to "2000k" if automatic detection fails and "bitrate" parameter is not specified.'))
-    print(str(''))
-    exit()
+parser = argparse.ArgumentParser()
+parser.add_argument("infile", help="Original input video file.")
+parser.add_argument("edlfile", help="EDL file with edit definitions.")
+parser.add_argument("outfile", help="Edited video file path/name.")
+parser.add_argument("-t", "--threads", type=int, help="Number of CPU threads to use.")
+parser.add_argument("-p", "--preset", choices=["ultrafast", "superfast", "fast", "medium", "slow", "superslow"], help="FFMPEG preset to use for optimizing the compression. Defaults to 'medium'.")
+parser.add_argument("-b", "--bitrate", help="Video bitrate setting. Auto-detected from original video unless specified. Defaults to '2000k'.")
+args = parser.parse_args()
 
-
-file = open(sys.argv[2], 'r')
+file = open(args.edlfile, 'r')
 row = file.readlines()
 
-if len(sys.argv) < 5:
+if args.threads == None:
     threadNum = 2
 else:
-    threadNum = sys.argv[4]
+    threadNum = args.threads
 
-if len(sys.argv) < 6:
+if args.preset == None:
     ffmpegPreset = "medium"
 else:
-    ffmpegPreset = sys.argv[5]
+    ffmpegPreset = args.preset
 
 try:
     tmpf = tempfile.NamedTemporaryFile()
-    os.system("ffmpeg -i \"%s\" 2> %s" % (sys.argv[1], tmpf.name))
+    os.system("ffmpeg -i \"%s\" 2> %s" % (args.infile, tmpf.name))
     lines = tmpf.readlines()
     tmpf.close()
 
@@ -48,17 +42,17 @@ except:
     audiobitrate = str("300k")
 
 
-if len(sys.argv) == 7:
-    videoBitrate = str(sys.argv[6])
-else:
+if args.bitrate == None:
     print("Using original video bitrate: "+videoBitrate)
+else:
+    videoBitrate = args.bitrate
 
 
 clipNum = 1
 global prevTime
 prevTime = 0
 actionTime = False
-clips = VideoFileClip(sys.argv[1]).subclip(0,0) #blank 0-time clip
+clips = VideoFileClip(args.infile).subclip(0,0) #blank 0-time clip
 
 for line in row:
     info = line.split()
@@ -66,7 +60,7 @@ for line in row:
     time2 = float(info[1])
     action = info[2]
 
-    clip = VideoFileClip(sys.argv[1]).subclip(prevTime,nextTime)
+    clip = VideoFileClip(args.infile).subclip(prevTime,nextTime)
     clips = concatenate([clips,clip])
     print("created subclip from " + str(prevTime) + " to " + str(nextTime))
 
@@ -80,14 +74,14 @@ for line in row:
     elif action == "0":
         print("Muted video.") #do nothing (video muted)
     else:
-        clip = VideoFileClip(sys.argv[1]).subclip(prevTime,nextTime)
+        clip = VideoFileClip(args.infile).subclip(prevTime,nextTime)
         clips = concatenate([clips,clip])
         
     prevTime = nextTime
 
 
-videoLength = VideoFileClip(sys.argv[1]).duration
-clip = VideoFileClip(sys.argv[1]).subclip(prevTime,videoLength)
+videoLength = VideoFileClip(args.infile).duration
+clip = VideoFileClip(args.infile).subclip(prevTime,videoLength)
 print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
 clips = concatenate([clips,clip])
-clips.write_videofile(sys.argv[3], codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset)
+clips.write_videofile(args.outfile, codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset)
