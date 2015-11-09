@@ -12,7 +12,14 @@ This script takes in as arguments:
 * An EDL file.
 * A file name to save the edited file to.
 
-Example command: `python edledit.py "My Video.mp4" "My Video.edl" "My Video edited.mp4"`
+Available options are:
+* -t, Number of process threads to use: A number from 0 to the number of CPU cores you have. Defaults to 2 if not specified.
+* -p, ffmpeg preset to use: Adjusts speed and efficiency of the compression. Defaults to "medium" if not specified.
+* -b, Video bitrate: Automatically detected from original if not specified. Defaults to "2000k" if not specified and auto-detection fails.
+
+Usage info is available using the "-h" option.
+
+Example command: `python3 edledit.py "My Video.mp4" "My Video.edl" "My Video edited.mp4" -t 3`
 
 The edits listed in the EDL file will be used to create an edited version of the original video.
 See [here](http://www.mplayerhq.hu/DOCS/HTML/en/edl.html) for instructions on making an EDL file.
@@ -31,6 +38,13 @@ Example command: `python edltweak.py "My Video.mp4" "My Video.edl"`
 The script will start up a small curses-based UI that assists with making adjustments to (tweaking)
 the timings in EDL files. It also hooks into VLC to show a rendering of the adjusted segment of the video.
 The keyboard commands to operate the tool are all listed in the UI when it starts.
+
+
+##edltweak-gui
+
+This script does the same thing as edltweak, but it has a Python 3 TTK (Tkinter) GUI instead of the curses-based UI.
+
+The same arguments as edltweak work, but it also has a file-selection dialog you can use if you run it without arguments.
 
 
 ##edlcreate
