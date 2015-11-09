@@ -19,7 +19,7 @@ Available options are:
 
 Usage info is available using the "-h" option.
 
-Example command: `python3 edledit.py "My Video.mp4" "My Video.edl" "My Video edited.mp4" -t 3`
+Example command: `python3 edledit.py "Video.mp4" "Video.edl" "Video-edited.mp4" -t 3`
 
 The edits listed in the EDL file will be used to create an edited version of the original video.
 See [here](http://www.mplayerhq.hu/DOCS/HTML/en/edl.html) for instructions on making an EDL file.
@@ -35,14 +35,14 @@ This script takes in as arguments:
 
 Example command: `python edltweak.py "My Video.mp4" "My Video.edl"`
 
-The script will start up a small curses-based UI that assists with making adjustments to (tweaking)
+The script will start up a small text-based UI that assists with making adjustments to (tweaking)
 the timings in EDL files. It also hooks into VLC to show a rendering of the adjusted segment of the video.
 The keyboard commands to operate the tool are all listed in the UI when it starts.
 
 
 ##edltweak-gui
 
-This script does the same thing as edltweak, but it has a Python 3 TTK (Tkinter) GUI instead of the curses-based UI.
+This script does the same thing as edltweak, but it has a Python 3 TTK (Tkinter) GUI instead of the text-based UI.
 
 The same arguments as edltweak work, but it also has a file-selection dialog you can use if you run it without arguments.
 
