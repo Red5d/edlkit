@@ -105,19 +105,23 @@ editline = 0
 def videofileset(e):
     global videofile
     videofile = filedialog.askopenfilename()
-    videofilevalue.set(videofile.split('/')[-1])
-    if edlfile != "":
-        show_struct()
+    if videofile != "":
+        videofilevalue.set(videofile.split('/')[-1])
+
+        if edlfile != "":
+            show_struct()
 
 def edlfileset(e):
     global edlfile
     global estruct
     edlfile = filedialog.askopenfilename()
-    edlfilevalue.set(edlfile.split('/')[-1])
-    edlfile_read = open(edlfile, 'r')
-    estruct = edl.struct(edlfile_read)
-    if videofile != "":
-        show_struct()
+    if edlfile != "":
+        edlfilevalue.set(edlfile.split('/')[-1])
+        edlfile_read = open(edlfile, 'r')
+        estruct = edl.struct(edlfile_read)
+
+        if videofile != "":
+            show_struct()
 
 #stdscr = curses.initscr()
 #curses.cbreak()
