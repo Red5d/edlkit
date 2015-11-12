@@ -46,6 +46,8 @@ if args.bitrate == None:
     print("Using original video bitrate: "+videoBitrate)
 else:
     videoBitrate = args.bitrate
+    if videoBitrate[-1] != 'k':
+        videoBitrate = videoBitrate+'k'
 
 
 clipNum = 1
