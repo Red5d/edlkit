@@ -20,7 +20,7 @@ vlc = socket.socket()
 testConn = vlc.connect_ex(('127.0.0.1', 12000))
 if testConn > 0:
     subprocess.Popen(["vlc","-q","--extraintf","rc","--rc-host","localhost:12000"], stdout=DEVNULL, stderr=subprocess.STDOUT)
-    print "Starting VLC..."
+    print("Starting VLC...")
     while testConn > 0:
         testConn = vlc.connect_ex(('127.0.0.1', 12000))
         time.sleep(0.5)
@@ -33,15 +33,15 @@ vlc.recv(2048)
 
 def rewind():
     rwTime = int(getTime())-5
-    vlc.send('seek '+str(rwTime)+'\n')
+    vlc.send(b"seek "+rwTime.encode('utf-8')+b"\n")
     vlc.recv(2048)
     
 def play_pause():
-    vlc.send('pause\n')
+    vlc.send(b"pause\n")
     vlc.recv(2048)
     
 def stop():
-    vlc.send('stop\n')
+    vlc.send(b"stop\n")
     vlc.close()
 
 global result    
@@ -49,17 +49,17 @@ result = ""
 def getTime():
     play_pause()
     play_pause()
-    vlc.send('get_time\n')
+    vlc.send(b"get_time\n")
     global result
-    result = vlc.recv(100).split('\r')
+    result = vlc.recv(100).split(b'\r')
     
-    while '> ' in result[0]:
-        vlc.send('get_time\n')
+    while b'> ' in result[0]:
+        vlc.send(b"get_time\n")
         global result
-        result = vlc.recv(100).split('\r')
+        result = vlc.recv(100).split(b'\r')
     
     if len(result) == 3:
-        time = result[1].split(' ')[1]
+        time = result[1].split(b' ')[1]
     else:
         time = result[0]
 
@@ -91,7 +91,7 @@ def stdout_on():
 
 
 videofile = sys.argv[1]
-vlc.send('add '+videofile+'\n')
+vlc.send(b"add "+videofile.encode('utf-8')+b"\n")
 
 edlfile = sys.argv[2]
 editline = 0
