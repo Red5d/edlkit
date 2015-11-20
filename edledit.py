@@ -70,16 +70,41 @@ for line in row:
     nextTime = time2
 
     if action == "1":
-        clip = VideoFileClip(sys.argv[1], audio = False).subclip(prevTime,nextTime)
+        # Muting audio only. Create a segment with no audio and add it to the rest.
+        clip = VideoFileClip(args.infile, audio = False).subclip(prevTime,nextTime)
         clips = concatenate([clips,clip])
         print("created muted subclip from " + str(prevTime) + " to " + str(nextTime))
+
+        # Advance to next segment time.
+        prevTime = nextTime
+
     elif action == "0":
-        print("Muted video.") #do nothing (video muted)
+        #Do nothing (video and audio cut)
+        print("Cut video from "+str(prevTime)+" to "+str(nextTime)+".")
+        prevTime = nextTime
+
+    elif action == "2":
+        # Cut audio and speed up video to cover it.
+        v = VideoFileClip(args.infile)
+
+        # Create two clips. One for the cut segment, one immediately after of equal length for use in the speedup.
+        s1 = v.subclip(prevTime,nextTime).without_audio()
+        s2 = v.subclip(nextTime,(nextTime + s1.duration))
+
+        # Put the clips together, speed them up, and use the audio from the second segment.
+        clip = concatenate([s1,s2.without_audio()]).speedx(final_duration=s1.duration).set_audio(s2.audio)
+        clips = concatenate([clips,clip])
+        print("Cutting audio from "+str(prevTime)+" to "+str(nextTime)+" and squeezing video from "+str(prevTime)+" to "+str(nextTime + s1.duration)+" into that slot.")
+        # Advance to next segment time (+time from speedup)
+        prevTime = nextTime + s1.duration
+
     else:
+        # No edit action. Just put the clips together and continue.
         clip = VideoFileClip(args.infile).subclip(prevTime,nextTime)
         clips = concatenate([clips,clip])
-        
-    prevTime = nextTime
+
+        # Advance to next segment time.
+        prevTime = nextTime
 
 
 videoLength = VideoFileClip(args.infile).duration
