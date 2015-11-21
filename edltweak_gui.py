@@ -33,6 +33,9 @@ def updateDisplay(e):
     elif estruct.action[int(struct.item(item, "text"))-1] == "-":
         actionvalue.set("Action: None")
         action2 = "-"
+    elif estruct.action[int(struct.item(item, "text"))-1] == "2":
+        actionvalue.set("Action: Cut audio, Speed up video")
+        action2 = 2
     else:
         actionvalue.set("Action: Unknown")
         action2 = "-"
@@ -139,7 +142,7 @@ t2value.set("0.00")
 t2label = ttk.Label(mainframe, textvariable=t2value, width=12).grid(column=6, row=2, sticky=(W, E))
 actionvalue = StringVar()
 actionvalue.set("Action: None")
-actionlabel = ttk.Label(mainframe, textvariable=actionvalue, width=12).grid(column=3, row=3, sticky=(W), columnspan=2)
+actionlabel = ttk.Label(mainframe, textvariable=actionvalue, width=30).grid(column=2, row=3, sticky=(E), columnspan=2)
 statusvalue = StringVar()
 statuslabel = ttk.Label(mainframe, textvariable=statusvalue, width=12).grid(column=3, row=5, sticky=(W, E), columnspan=2)
 
@@ -190,6 +193,16 @@ def createClip(start, end, time1, time2, action):
 
         clip3 = VideoFileClip(videofile).subclip(time2,end)
         clips = concatenate([clip1,clip3])
+    elif str(action) == "2":
+        if time2 > VideoFileClip(videofile).duration:
+            end = VideoFileClip(videofile).duration
+            time2 = end
+            
+        s1 = VideoFileClip(videofile).subclip(time1,time2).without_audio()
+        s2 = VideoFileClip(videofile).subclip(time2, (time2 + s1.duration))
+        clip2 = concatenate([s1,s2.without_audio()]).speedx(final_duration=s1.duration).set_audio(s2.audio)
+        clip3 = VideoFileClip(videofile).subclip((time2 + s1.duration),end)
+        clips = concatenate([clip1,clip2,clip3])
     else:
         if time2 > VideoFileClip(videofile).duration:
             end = VideoFileClip(videofile).duration
@@ -290,6 +303,8 @@ def update_struct():
         struct.set(struct.selection(), column="Action", value="0")
     if actionvalue.get() == "Action: None":
         struct.set(struct.selection(), column="Action", value="-")
+    if actionvalue.get() == "Action: Cut audio, Speed up video":
+        struct.set(struct.selection(), column="Action", value="2")
 
 
 def keyCommand(e):
@@ -338,6 +353,9 @@ def keyCommand(e):
         actionvalue.set("Action: Cut")
         #global action2
         action2 = 0
+    elif key == '2':
+        actionvalue.set("Action: Cut audio, Speed up video")
+        action2 = 2
     elif key == '-':
         actionvalue.set("Action: None")
         #global action2
