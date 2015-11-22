@@ -14,6 +14,8 @@ action2 = 0
 
 root = Tk()
 root.title("EDL Kit: Tweaker")
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
     
 def updateDisplay(e):
     global num1
@@ -25,27 +27,28 @@ def updateDisplay(e):
     t2value.set(float(estruct.time2[int(struct.item(item, "text"))-1]))
     num2 = float(t2value.get())
     if estruct.action[int(struct.item(item, "text"))-1] == "1":
-        actionvalue.set("Action: Mute")
+        actionvalue.set("Mute")
         action2 = 1
     elif estruct.action[int(struct.item(item, "text"))-1] == "0":
-        actionvalue.set("Action: Cut")
+        actionvalue.set("Cut")
         action2 = 0
     elif estruct.action[int(struct.item(item, "text"))-1] == "-":
-        actionvalue.set("Action: None")
+        actionvalue.set("None")
         action2 = "-"
     elif estruct.action[int(struct.item(item, "text"))-1] == "2":
-        actionvalue.set("Action: Cut audio, Speed up video")
+        actionvalue.set("Cut audio, Speed up video")
         action2 = 2
     else:
-        actionvalue.set("Action: Unknown")
+        actionvalue.set("Unknown")
         action2 = "-"
 
 
 
-mainframe = ttk.Frame(root, padding="3 3 12 12")
-mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
-mainframe.columnconfigure(0, weight=1)
-mainframe.rowconfigure(0, weight=1)
+mainframe = ttk.Frame(root, padding=(3, 3, 12, 12))
+mainframe.grid(sticky='nwse')
+for column in range(3):
+    mainframe.columnconfigure(column, weight=1)
+mainframe.rowconfigure(1, weight=1)
 
 def stdout_off():
     _stderr = sys.stderr
@@ -132,45 +135,52 @@ def edlfileset(e):
 #curses.curs_set(0)
 #stdscr.keypad(1)
 
-ttk.Label(mainframe, text="Time 1:").grid(column=1, row=2, sticky=(E))
+intervalLabelFrame = ttk.LabelFrame(mainframe, padding=5, text="Time Intervals")
+intervalLabelFrame.grid(padx=5, pady=5, ipady=2, sticky=(W), row=0, column=0)
+ttk.Label(intervalLabelFrame, text="Time 1: ").grid(column=0, row=0, sticky=(E))
 t1value = StringVar()
 t1value.set("0.00")
-t1label = ttk.Label(mainframe, textvariable=t1value, width=12).grid(column=2, row=2, sticky=(W))
-ttk.Label(mainframe, text="Time 2:").grid(column=5, row=2, sticky=(W, E))
+t1label = ttk.Label(intervalLabelFrame, textvariable=t1value, width=12).grid(column=1, row=0, sticky=(W))
+ttk.Label(intervalLabelFrame, text="Time 2: ").grid(column=2, row=0, sticky=(E))
 t2value = StringVar()
 t2value.set("0.00")
-t2label = ttk.Label(mainframe, textvariable=t2value, width=12).grid(column=6, row=2, sticky=(W, E))
-actionvalue = StringVar()
-actionvalue.set("Action: None")
-actionlabel = ttk.Label(mainframe, textvariable=actionvalue, width=30).grid(column=2, row=3, sticky=(E), columnspan=2)
-statusvalue = StringVar()
-statuslabel = ttk.Label(mainframe, textvariable=statusvalue, width=12).grid(column=3, row=5, sticky=(W, E), columnspan=2)
+t2label = ttk.Label(intervalLabelFrame, textvariable=t2value, width=8).grid(column=3, row=0, sticky=(W))
 
+actionLabelFrame = ttk.LabelFrame(mainframe, padding=5, text="Action")
+actionLabelFrame.grid(padx=5, pady=5, ipady=2, sticky=(W), row=1, column=0)
+actionvalue = StringVar()
+actionvalue.set("None")
+actionlabel = ttk.Label(actionLabelFrame, textvariable=actionvalue, width=30).grid(column=0, row=0, sticky=(E), padx=10)
+
+statusLabelFrame = ttk.LabelFrame(mainframe, padding=5, text="Status")
+statusLabelFrame.grid(padx=5, pady=5, ipady=2, sticky=(W), row=2, column=0)
+statusvalue = StringVar()
+statusvalue.set("Ready")
+statuslabel = ttk.Label(statusLabelFrame, textvariable=statusvalue, width=12).grid(column=0, row=1, sticky=(E), padx=10)
+
+filesLabelFrame = ttk.LabelFrame(mainframe, padding=5, text="Files")
+filesLabelFrame.grid(padx=5, pady=5, sticky=(W), row=3, column=0)
 videofilevalue = StringVar()
-videofilelabel = ttk.Label(mainframe, textvariable=videofilevalue)
-videofilelabel.grid(column=1, row=7, columnspan=5, sticky=(W, E))
+videofilelabel = ttk.Label(filesLabelFrame, textvariable=videofilevalue)
+videofilelabel.grid(column=0, row=0, sticky=(W, E))
 videofilevalue.set("<Click to select video file>")
 
 edlfilevalue = StringVar()
-edlfilelabel = ttk.Label(mainframe, textvariable=edlfilevalue)
-edlfilelabel.grid(column=1, row=8, columnspan=5, sticky=(W, E))
+edlfilelabel = ttk.Label(filesLabelFrame, textvariable=edlfilevalue)
+edlfilelabel.grid(column=0, row=1, sticky=(W, E))
 edlfilevalue.set("<Click to select EDL file>")
 
-
-
-struct = ttk.Treeview(mainframe, columns=("Time 1", "Time 2", "Action"), height=25)
-struct.grid(column=8, row=2, sticky=(W, E), rowspan=50)
+struct = ttk.Treeview(mainframe, columns=("Time 1", "Time 2", "Action"))
+struct['show'] = 'headings'
+struct.grid(column=1, row=0, rowspan=4)
 struct.heading("Time 1", text="Time 1", anchor='center')
-struct.column("Time 1", width=60, anchor='center')
+struct.column("Time 1", width=70, anchor='center')
 struct.heading("Time 2", text="Time 2", anchor='center')
-struct.column("Time 2", width=60, anchor='center')
+struct.column("Time 2", width=70, anchor='center')
 struct.heading("Action", text="Action", anchor='center')
 struct.column("Action", width=60, anchor='center')
 s = ttk.Scrollbar(struct, orient="vertical", command=struct.yview)
 struct.configure(yscrollcommand=s.set)
-
-
-
     
 
 def createClip(start, end, time1, time2, action):
@@ -226,14 +236,14 @@ def show_help():
     ttk.Label(helpframe, text="z,c\tMove Time1 left and right by 0.10 seconds.").grid(column=3, row=10, sticky=(W, E), columnspan=4)
     ttk.Label(helpframe, text="j,l\tMove Time2 left and right by 0.01 seconds.").grid(column=3, row=11, sticky=(W, E), columnspan=4)
     ttk.Label(helpframe, text="m,.\tMove Time2 left and right by 0.10 seconds.").grid(column=3, row=12, sticky=(W, E), columnspan=4)
-    ttk.Label(helpframe, text="1,0,-\tSwitch between action 1 (mute), 0 (cut), and - (disable).").grid(column=3, row=13, sticky=(W, E), columnspan=4)
+    ttk.Label(helpframe, text="1,0,2,-\tSwitch between action 1 (mute), 0 (cut), 2 (cut audio, speed up video), and - (disable).").grid(column=3, row=13, sticky=(W, E), columnspan=4)
     ttk.Label(helpframe, text="t\tTransfer edits to edl structure.").grid(column=3, row=14, sticky=(W, E), columnspan=4)
     ttk.Label(helpframe, text="w\tWrite edits to edl file.").grid(column=3, row=15, sticky=(W, E), columnspan=4)
     ttk.Label(helpframe, text="r\tRecompile edits and display video.").grid(column=3, row=16, sticky=(W, E), columnspan=4)
     ttk.Label(helpframe, text="u,p\tRewind or pause the video.").grid(column=3, row=17, sticky=(W, E), columnspan=4)
     ttk.Label(helpframe, text="o\tPlay the source video file without changes.").grid(column=3, row=18, sticky=(W, E), columnspan=4)
     
-ttk.Button(mainframe, text="Keyboard Controls", command=show_help).grid(column=1, row=20)
+ttk.Button(mainframe, text="Keyboard Controls", command=show_help).grid(column=0, row=5)
 #stdscr.addstr(5, 30, "Reloading edit...")
 #stdscr.refresh()
 
@@ -279,7 +289,7 @@ def show_struct():
     num2 = float(t2value.get())
     #num2 = float(estruct.time2[editline])
     global action2
-    action2 = actionvalue.get().split(' ')[1]
+    action2 = actionvalue.get()
     #action2 = str(estruct.action[editline])
     #stdscr.addstr(2, 20, "Time1: "+str(num1)+"    ")
     #stdscr.addstr(2, 40, "Time2: "+str(num2)+"    ")
@@ -297,13 +307,13 @@ def show_struct():
 def update_struct():
     struct.set(struct.selection(), column="Time 1", value=t1value.get())
     struct.set(struct.selection(), column="Time 2", value=t2value.get())
-    if actionvalue.get() == "Action: Mute":
+    if actionvalue.get() == "Mute":
         struct.set(struct.selection(), column="Action", value="1")
-    if actionvalue.get() == "Action: Cut":
+    if actionvalue.get() == "Cut":
         struct.set(struct.selection(), column="Action", value="0")
-    if actionvalue.get() == "Action: None":
+    if actionvalue.get() == "None":
         struct.set(struct.selection(), column="Action", value="-")
-    if actionvalue.get() == "Action: Cut audio, Speed up video":
+    if actionvalue.get() == "Cut audio, Speed up video":
         struct.set(struct.selection(), column="Action", value="2")
 
 
@@ -346,25 +356,25 @@ def keyCommand(e):
         num2 = num2+0.10
         t2value.set("{0:.2f}".format(num2))
     elif key == '1':
-        actionvalue.set("Action: Mute")
+        actionvalue.set("Mute")
         #global action2
         action2 = 1
     elif key == '0':
-        actionvalue.set("Action: Cut")
+        actionvalue.set("Cut")
         #global action2
         action2 = 0
     elif key == '2':
-        actionvalue.set("Action: Cut audio, Speed up video")
+        actionvalue.set("Cut audio, Speed up video")
         action2 = 2
     elif key == '-':
-        actionvalue.set("Action: None")
+        actionvalue.set("None")
         #global action2
         action2 = "-"
     elif key == 'r':
         statusvalue.set("Reloading Edit...")
         root.update()
         createClip(num1-3, num2+3, num1, num2, action2)
-        statusvalue.set("")
+        statusvalue.set("Ready")
         #if str(action2) == "1":
         #    stdscr.addstr(5, 30, "Set to mute mode.")
         #elif str(action2) == "0":
