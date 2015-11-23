@@ -39,7 +39,7 @@ try:
 
 except:
     videoBitrate = str("2000k")
-    audioBitrate = str("300k")
+    audioBitrate = str("400k")
 
 
 if args.bitrate == None:
