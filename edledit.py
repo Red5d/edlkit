@@ -13,6 +13,9 @@ args = parser.parse_args()
 file = open(args.edlfile, 'r')
 row = file.readlines()
 
+videoBitrate = ""
+audioBitrate = ""
+
 if args.threads == None:
     threadNum = 2
 else:
@@ -38,8 +41,8 @@ try:
             audioBitrate = (re.search(b', (\d+ kb/s)', l).group(1)).strip().split(b' ')[0].decode('utf-8')+"k"
 
 except:
-    videoBitrate = str("2000k")
-    audioBitrate = str("400k")
+    videoBitrate = "2000k"
+    audioBitrate = "400k"
 
 
 if args.bitrate == None:
@@ -49,6 +52,8 @@ else:
     if videoBitrate[-1] != 'k':
         videoBitrate = videoBitrate+'k'
 
+if audioBitrate == "" or audioBitrate == " ":
+    audioBitrate = "400k"
 
 clipNum = 1
 global prevTime
