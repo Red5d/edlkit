@@ -15,14 +15,15 @@ class EDL(object):
                 elif len(line.split()) == 2:
                     self.edits.append(Edit(line.split()[0], line.split()[1], "-"))
                 
+    def sort(self):
+        self.edits.sort(key=lambda x: float(x.time1))
+                
     def save(self):
+        self.sort()
         with open(self.edlfile, 'w') as f:
             for edit in self.edits:
-                f.writelines(edit.time1+"      "+edit.time2+"      "+edit.action+"\n")
+                f.writelines(str(edit.time1)+"      "+str(edit.time2)+"      "+edit.action+"\n")
                 
-    def sort(self):
-        self.edits.sort(key=lambda x: x.time1)
-        
     def add(self, time1, time2, action):
         self.edits.append(Edit(time1, time2, action))
         self.sort()
