@@ -22,20 +22,20 @@ def updateDisplay(e):
     global num2
     global action2
     item = struct.selection()[0]
-    t1value.set(float(estruct.time1[int(struct.item(item, "text"))-1]))
+    t1value.set(float(estruct.edits[int(struct.item(item, "text"))-1].time1))
     num1 = float(t1value.get())
-    t2value.set(float(estruct.time2[int(struct.item(item, "text"))-1]))
+    t2value.set(float(estruct.edits[int(struct.item(item, "text"))-1].time2))
     num2 = float(t2value.get())
-    if estruct.action[int(struct.item(item, "text"))-1] == "1":
+    if estruct.edits[int(struct.item(item, "text"))-1].action == "1":
         actionvalue.set("Mute")
         action2 = 1
-    elif estruct.action[int(struct.item(item, "text"))-1] == "0":
+    elif estruct.edits[int(struct.item(item, "text"))-1].action == "0":
         actionvalue.set("Cut")
         action2 = 0
-    elif estruct.action[int(struct.item(item, "text"))-1] == "-":
+    elif estruct.edits[int(struct.item(item, "text"))-1].action == "-":
         actionvalue.set("None")
         action2 = "-"
-    elif estruct.action[int(struct.item(item, "text"))-1] == "2":
+    elif estruct.edits[int(struct.item(item, "text"))-1].action == "2":
         actionvalue.set("Cut audio, Speed up video")
         action2 = 2
     else:
@@ -123,8 +123,7 @@ def edlfileset(e):
     edlfile = filedialog.askopenfilename()
     if edlfile != "":
         edlfilevalue.set(edlfile.split('/')[-1])
-        edlfile_read = open(edlfile, 'r')
-        estruct = edl.struct(edlfile_read)
+        estruct = edl.EDL(edlfile)
 
         if videofile != "":
             show_struct()
@@ -274,11 +273,11 @@ ttk.Button(mainframe, text="Keyboard Controls", command=show_help).grid(column=0
 def show_struct():
     linenum = 0
     struct.delete(*struct.get_children())
-    while linenum <= len(estruct.time1)-1:
+    while linenum <= len(estruct.edits)-1:
         #stdscr.addstr(linenum+2, 58, "                               ")
         #if linenum == editline:
         #    stdscr.addstr(linenum+2, 68, "= "+estruct.time1[linenum]+" "+estruct.time2[linenum]+" "+estruct.action[linenum]+" =")
-        struct.insert('', 'end', text=str(linenum+1), values=(estruct.time1[linenum], estruct.time2[linenum], estruct.action[linenum]))
+        struct.insert('', 'end', text=str(linenum+1), values=(estruct.edits[linenum].time1, estruct.edits[linenum].time2, estruct.edits[linenum].action))
         #else:
         #    stdscr.addstr(linenum+2, 70, estruct.time1[linenum]+" "+estruct.time2[linenum]+" "+estruct.action[linenum])
 
@@ -395,7 +394,7 @@ def keyCommand(e):
             editline = editline-1
             show_struct()
     elif key == ']':
-        if editline != len(estruct.time1)-1:
+        if editline != len(estruct.edits)-1:
             editline = editline+1
             show_struct()
 #    elif key == curses.KEY_UP:
@@ -409,15 +408,12 @@ def keyCommand(e):
     elif key == 't':
         item = struct.selection()[0]
         linenum = int(struct.item(item, "text"))-1
-        estruct.time1[linenum] = str("{0:.2f}".format(num1))
-        estruct.time2[linenum] = str("{0:.2f}".format(num2))
-        estruct.action[linenum] = str(action2)
+        estruct.edits[linenum].time1 = str("{0:.2f}".format(num1))
+        estruct.edits[linenum].time2 = str("{0:.2f}".format(num2))
+        estruct.edits[linenum].action = str(action2)
         update_struct()
     elif key == 'w':
-        edlfile_write = open(edlfile, 'w')
-        ewriter = edl.writer(edlfile_write)
-        ewriter.write_struct(estruct)
-        edlfile_write.close()
+        estruct.save()
         statusvalue.set("Saved changes.")
     elif key == 'q':
         exit()
@@ -430,8 +426,7 @@ root.bind('<Key>', keyCommand)
 if len(sys.argv) > 1:
     videofile = sys.argv[1]
     edlfile = sys.argv[2]
-    edlfile_read = open(edlfile, 'r')
-    estruct = edl.struct(edlfile_read)
+    estruct = edl.EDL(edlfile)
     editline = 0
     videofilevalue.set(videofile.split('/')[-1])
     edlfilevalue.set(edlfile.split('/')[-1])

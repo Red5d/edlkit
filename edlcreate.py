@@ -2,6 +2,7 @@
 
 import os, sys, curses, edl, socket, subprocess, time
 
+
 def stdout_off():
     _stderr = sys.stderr
     _stdout = sys.stdout
@@ -68,17 +69,14 @@ def getTime():
     
 def addEdit():
     time1 = float(int(getTime()))
-    estruct.time1.append(time1-1)
-    estruct.time2.append(time1-0.5)
-    estruct.action.append(1)
-    estruct.time1.sort()
-    estruct.time2.sort()
+    estruct.add(time1-1, time1-0.5, 1)
+    estruct.sort()
     
 def showStruct():
     linenum = 0
-    while linenum <= len(estruct.time1)-1:
+    while linenum <= len(estruct.edits)-1:
         stdscr.addstr(linenum+2, 58, "                               ")
-        stdscr.addstr(linenum+2, 70, str(estruct.time1[linenum]))
+        stdscr.addstr(linenum+2, 70, str(estruct.edits[linenum].time1))
         linenum = linenum + 1
         
     stdscr.refresh()
@@ -97,8 +95,7 @@ edlfile = sys.argv[2]
 editline = 0
 
 # Open specified edl file. (create it if it doesn't exist)
-edlfile_read = open(edlfile, 'a+')
-estruct = edl.struct(edlfile_read)
+estruct = edl.EDL(edlfile)
     
 
 stdscr = curses.initscr()
@@ -130,10 +127,7 @@ while key != ord('q'):
     elif key == ord('u'):
         rewind()
     elif key == ord('w'):
-        edlfile_write = open(edlfile, 'w')
-        ewriter = edl.writer(edlfile_write)
-        ewriter.write_struct(estruct)
-        edlfile_write.close()
+        estruct.save()
         stdscr.addstr(0,68,"Saved")
         stdscr.refresh()
         

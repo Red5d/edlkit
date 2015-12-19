@@ -1,5 +1,5 @@
 from moviepy.editor import *
-import sys, os, re, tempfile, argparse
+import sys, os, re, edl, tempfile, argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("infile", help="Original input video file.")
@@ -10,8 +10,7 @@ parser.add_argument("-p", "--preset", choices=["ultrafast", "superfast", "fast",
 parser.add_argument("-b", "--bitrate", help="Video bitrate setting. Auto-detected from original video unless specified. Defaults to '2000k'.")
 args = parser.parse_args()
 
-file = open(args.edlfile, 'r')
-row = file.readlines()
+estruct = edl.EDL(args.edlfile)
 
 videoBitrate = ""
 audioBitrate = ""
@@ -61,11 +60,10 @@ prevTime = 0
 actionTime = False
 clips = VideoFileClip(args.infile).subclip(0,0) #blank 0-time clip
 
-for line in row:
-    info = line.split()
-    nextTime = float(info[0])
-    time2 = float(info[1])
-    action = info[2]
+for edit in estruct.edits:
+    nextTime = float(edit.time1)
+    time2 = float(edit.time2)
+    action = edit.action
 
     clip = VideoFileClip(args.infile).subclip(prevTime,nextTime)
     clips = concatenate([clips,clip])
