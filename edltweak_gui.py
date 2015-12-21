@@ -12,6 +12,8 @@ num1 = 0
 num2 = 0
 action2 = 0
 
+playing_original = False
+
 root = Tk()
 root.title("EDL Kit: Tweaker")
 root.columnconfigure(0, weight=1)
@@ -82,6 +84,7 @@ def rewind():
     
 def play_pause():
     vlc.send('pause\n'.encode())
+    vlc.recv(2048)
     
 def stop():
     vlc.send('shutdown\n'.encode())
@@ -90,10 +93,33 @@ def stop():
 def reload():
     vlc.send('clear\n'.encode())
     vlc.send('add /tmp/tweak.mp4\n'.encode())
+    global playing_original
+    playing_original = False
 
 def load_original():
     vlc.send('clear\n'.encode())
-    vlc.send(('add '+videofile+'\n').encode())    
+    vlc.send(('add '+videofile+'\n').encode())
+    global playing_original
+    playing_original = True
+    
+vlc.recv(2048)
+def getTime():
+    play_pause()
+    play_pause()
+    vlc.send(b"get_time\n")
+    result = ""
+    result = vlc.recv(100).split(b'\r')
+    
+    while b'> ' in result[0]:
+        vlc.send(b"get_time\n")
+        result = vlc.recv(100).split(b'\r')
+    
+    if len(result) == 3:
+        time = result[1].split(b' ')[1]
+    else:
+        time = result[0]
+
+    return time
     
 def stdout_on():
     sys.stderr = _stderr
@@ -106,7 +132,6 @@ edlfile = ""
 estruct = ""
 editline = 0
 
-    
 
 def videofileset(e):
     global videofile
@@ -346,8 +371,16 @@ def keyCommand(e):
         t2value.set("{0:.2f}".format(num2))
     elif key == 'm':
         #global num2
-        num2 = num2-0.10
-        t2value.set("{0:.2f}".format(num2))
+        if playing_original:
+            time1 = float(int(getTime()))
+            estruct.add(time1-1, time1-0.5, 1)
+            show_struct()
+        else:
+            num2 = num2-0.10
+            t2value.set("{0:.2f}".format(num2))
+    elif int(e.keycode) == 119:
+        estruct.edits.remove([x for x in estruct.edits if float(x.time1) == float(num1)][0])
+        show_struct()
     elif key == 'l':
         #global num2
         num2 = num2+0.01
