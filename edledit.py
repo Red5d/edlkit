@@ -1,19 +1,19 @@
 from moviepy.editor import *
 import sys, os, re, edl, tempfile, argparse
 
-def render(videofile, estruct, videoBitrate="2000k", audioBitrate="400k", threadNum=2, ffmpegPreset="medium"):
+def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k", threadNum=2, ffmpegPreset="medium"):
     clipNum = 1
     global prevTime
     prevTime = 0
     actionTime = False
-    clips = VideoFileClip(args.infile).subclip(0,0) #blank 0-time clip
+    clips = VideoFileClip(videofile).subclip(0,0) #blank 0-time clip
 
     for edit in estruct.edits:
         nextTime = float(edit.time1)
         time2 = float(edit.time2)
         action = edit.action
 
-        clip = VideoFileClip(args.infile).subclip(prevTime,nextTime)
+        clip = VideoFileClip(videofile).subclip(prevTime,nextTime)
         clips = concatenate([clips,clip])
         print("created subclip from " + str(prevTime) + " to " + str(nextTime))
 
@@ -22,7 +22,7 @@ def render(videofile, estruct, videoBitrate="2000k", audioBitrate="400k", thread
 
         if action == "1":
             # Muting audio only. Create a segment with no audio and add it to the rest.
-            clip = VideoFileClip(args.infile, audio = False).subclip(prevTime,nextTime)
+            clip = VideoFileClip(videofile, audio = False).subclip(prevTime,nextTime)
             clips = concatenate([clips,clip])
             print("created muted subclip from " + str(prevTime) + " to " + str(nextTime))
 
@@ -36,7 +36,7 @@ def render(videofile, estruct, videoBitrate="2000k", audioBitrate="400k", thread
 
         elif action == "2":
             # Cut audio and speed up video to cover it.
-            v = VideoFileClip(args.infile)
+            v = VideoFileClip(videofile)
 
             # Create two clips. One for the cut segment, one immediately after of equal length for use in the speedup.
             s1 = v.subclip(prevTime,nextTime).without_audio()
@@ -51,21 +51,21 @@ def render(videofile, estruct, videoBitrate="2000k", audioBitrate="400k", thread
 
         else:
             # No edit action. Just put the clips together and continue.
-            clip = VideoFileClip(args.infile).subclip(prevTime,nextTime)
+            clip = VideoFileClip(videofile).subclip(prevTime,nextTime)
             clips = concatenate([clips,clip])
 
             # Advance to next segment time.
             prevTime = nextTime
 
 
-    videoLength = VideoFileClip(args.infile).duration
-    clip = VideoFileClip(args.infile).subclip(prevTime,videoLength)
+    videoLength = VideoFileClip(videofile).duration
+    clip = VideoFileClip(videofile).subclip(prevTime,videoLength)
     print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
     clips = concatenate([clips,clip])
-    clips.write_videofile(args.outfile, codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset)
+    clips.write_videofile(outfile, codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("infile", help="Original input video file.")
     parser.add_argument("edlfile", help="EDL file with edit definitions.")
@@ -119,5 +119,9 @@ if __name__ == "__main__":
     if audioBitrate == "" or audioBitrate == " ":
         audioBitrate = "400k"
 
-    render(args.infile, estruct, videoBitrate, audioBitrate, threadNum, ffmpegPreset)
+    render(args.infile, estruct, args.outfile, videoBitrate, audioBitrate, threadNum, ffmpegPreset)
 
+
+if __name__ == "__main__":
+    main()
+    
