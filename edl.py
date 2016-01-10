@@ -1,3 +1,5 @@
+import os
+
 class Edit(object):
     def __init__(self, time1, time2, action):
         self.time1 = str(time1)
@@ -8,12 +10,16 @@ class EDL(object):
     def __init__(self, edlfile):
         self.edits = []
         self.edlfile = edlfile
-        with open(self.edlfile, 'a+') as f:
-            for line in f.readlines():
-                if len(line.split()) == 3:
-                    self.edits.append(Edit(line.split()[0], line.split()[1], line.split()[2].split('\n')[0]))
-                elif len(line.split()) == 2:
-                    self.edits.append(Edit(line.split()[0], line.split()[1], "-"))
+
+        if os.path.exists(self.edlfile) == False:
+            open(self.edlfile, 'a').close()
+        else:
+            with open(self.edlfile) as f:
+                for line in f.readlines():
+                    if len(line.split()) == 3:
+                        self.edits.append(Edit(line.split()[0], line.split()[1], line.split()[2].split('\n')[0]))
+                    elif len(line.split()) == 2:
+                        self.edits.append(Edit(line.split()[0], line.split()[1], "-"))
                 
     def sort(self):
         self.edits.sort(key=lambda x: float(x.time1))
