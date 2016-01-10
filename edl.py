@@ -8,7 +8,7 @@ class EDL(object):
     def __init__(self, edlfile):
         self.edits = []
         self.edlfile = edlfile
-        with open(self.edlfile) as f:
+        with open(self.edlfile, 'a+') as f:
             for line in f.readlines():
                 if len(line.split()) == 3:
                     self.edits.append(Edit(line.split()[0], line.split()[1], line.split()[2].split('\n')[0]))
