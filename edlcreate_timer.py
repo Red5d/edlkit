@@ -2,19 +2,11 @@
 
 import os, sys, curses, edl, time, Stopwatch
 
-def addEdit():
-    time1 = float("%.2f" % sw.getElapsedTime())
-    estruct.time1.append(time1-1)
-    estruct.time2.append(time1-0.5)
-    estruct.action.append(1)
-    estruct.time1.sort()
-    estruct.time2.sort()
-    
 def showStruct():
     linenum = 0
-    while linenum <= len(estruct.time1)-1:
+    while linenum <= len(estruct.edits)-1:
         stdscr.addstr(linenum+2, 58, "                               ")
-        stdscr.addstr(linenum+2, 70, str(estruct.time1[linenum]))
+        stdscr.addstr(linenum+2, 70, str(estruct.edits[linenum].time1))
         linenum = linenum + 1
         
     stdscr.refresh()
@@ -22,18 +14,16 @@ def showStruct():
 def pause_continue():
     if sw.running == True:
         sw.stop()
-        stdscr.addstr(5,30,"Paused at "+str(sw.getElapsedTime())+"         ")
+        stdscr.addstr(5,30,"Paused at "+str("{0:.2f}".format(sw.getElapsedTime()))+"         ")
     else:
         sw.start()
         stdscr.addstr(5,30,"Running...                         ")
         
     
-edlfile = sys.argv[1]
 editline = 0
 
 # Open specified edl file. (create it if it doesn't exist)
-edlfile_read = open(edlfile, 'a+')
-estruct = edl.struct(edlfile_read)
+estruct = edl.EDL(sys.argv[1])
     
 sw = Stopwatch.stopwatch()
 
@@ -59,23 +49,18 @@ while key != ord('q'):
     key = stdscr.getch()
     stdscr.refresh()
     if key == ord('m'):
-        addEdit()
+        time1 = float("%.2f" % sw.getElapsedTime())
+        estruct.add("{0:.2f}".format(time1-1), "{0:.2f}".format(time1-0.5), 1)
         showStruct()
     elif key == ord('p'):
         pause_continue()
     elif key == ord('w'):
-        edlfile_write = open(edlfile, 'w')
-        ewriter = edl.writer(edlfile_write)
-        ewriter.write_struct(estruct)
-        edlfile_write.close()
+        estruct.save()
         stdscr.addstr(0,68,"Saved")
         stdscr.refresh()
 
 
-edlfile_write = open(edlfile, 'w')
-ewriter = edl.writer(edlfile_write)
-ewriter.write_struct(estruct)
-edlfile_write.close()        
+estruct.save()        
 sw.stop()
 curses.endwin()
 
