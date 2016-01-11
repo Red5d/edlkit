@@ -1,7 +1,7 @@
 from moviepy.editor import *
 import sys, os, re, edl, tempfile, argparse
 
-def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k", threadNum=2, ffmpegPreset="medium"):
+def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k", threadNum=2, ffmpegPreset="medium", writeLogfile=False):
     clipNum = 1
     global prevTime
     prevTime = 0
@@ -62,7 +62,7 @@ def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k
     clip = VideoFileClip(videofile).subclip(prevTime,videoLength)
     print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
     clips = concatenate([clips,clip])
-    clips.write_videofile(outfile, codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset)
+    clips.write_videofile(outfile, codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset, write_logfile=writeLogfile)
 
 
 def main():
