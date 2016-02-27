@@ -15,7 +15,8 @@ This script takes in as arguments:
 Available options are:
 * -t, Number of process threads to use: A number from 0 to the number of CPU cores you have. Defaults to 2 if not specified.
 * -p, ffmpeg preset to use: Adjusts speed and efficiency of the compression. Defaults to "medium" if not specified.
-* -b, Video bitrate: Automatically detected from original if not specified. Defaults to "2000k" if not specified and auto-detection fails.
+* -vb, Video bitrate: Automatically detected from original if not specified.
+* -ab, Audio bitrate: Automatically detected from original if not specified.
 
 Usage info is available using the "-h" option.
 
@@ -24,27 +25,34 @@ Example command: `python3 edledit.py "Video.mp4" "Video.edl" "Video-edited.mp4" 
 The edits listed in the EDL file will be used to create an edited version of the original video.
 See [here](http://www.mplayerhq.hu/DOCS/HTML/en/edl.html) for instructions on making an EDL file.
 
-Currently, this script supports actions 1 and 0 (Mute, and Cut Video).
+Currently, this script supports actions 1, 0 (Mute, and Cut Video), and my custom action (2) which 
+cuts out the selected audio and speeds up the video enough to cover the audio cut and resync the video.
 
 
-##edltweak
+##edltweak_gui
 
 This script takes in as arguments:
 * A video file.
 * An EDL file.
 
-Example command: `python edltweak.py "My Video.mp4" "My Video.edl"`
+The script can also be run without arguments and the files selected in the GUI.
 
-The script will start up a small text-based UI that assists with making adjustments to (tweaking)
-the timings in EDL files. It also hooks into VLC to show a rendering of the adjusted segment of the video.
-The keyboard commands to operate the tool are all listed in the UI when it starts.
+Example command: `python edltweak_gui.py "My Video.mp4" "My Video.edl"`
+
+The script will start up a Python3 TTK (Tkinter) GUI that assists with making adjustments to (tweaking)
+the timings and edit types in EDL files. It also hooks into VLC to show a rendering of the adjusted segment of the video.
+The keyboard commands to operate the tool can be viewed by clicking the "Keyboard Controls" button after starting it.
+
+The functionality from the edlcreate script is now bundled into this as well. Pressing "o" (for Original) will
+play the video file in vlc, and you can mark edit points to save to an EDL file with "m" just like edlcreate while
+the original video is playing.
 
 
-##edltweak-gui
+##edltweak
 
-This script does the same thing as edltweak, but it has a Python 3 TTK (Tkinter) GUI instead of the text-based UI.
+This script does mostly the same thing as edltweak, but it has a text-based curses UI.
 
-The same arguments as edltweak work, but it also has a file-selection dialog you can use if you run it without arguments.
+Development has shifted to edltweak_gui now and this script will likely not be updated.
 
 
 ##edlcreate
@@ -59,7 +67,7 @@ A curses-based UI and VLC start up and let you mark edit times in the video as y
 be written to the EDL file you specified. The keyboard commands are all listed in the UI when it starts.
 
 
-##edlcreate-timer
+##edlcreate_timer
 
 This script takes in as arguments:
 * An EDL filename (to output to).
