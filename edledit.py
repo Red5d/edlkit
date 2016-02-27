@@ -1,5 +1,6 @@
 from moviepy.editor import *
 import sys, os, re, edl, tempfile, argparse
+from pymediainfo import MediaInfo
 
 def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k", threadNum=2, ffmpegPreset="medium", writeLogfile=False):
     clipNum = 1
@@ -72,7 +73,8 @@ def main():
     parser.add_argument("outfile", help="Edited video file path/name.")
     parser.add_argument("-t", "--threads", type=int, help="Number of CPU threads to use.")
     parser.add_argument("-p", "--preset", choices=["ultrafast", "superfast", "fast", "medium", "slow", "superslow"], help="FFMPEG preset to use for optimizing the compression. Defaults to 'medium'.")
-    parser.add_argument("-b", "--bitrate", help="Video bitrate setting. Auto-detected from original video unless specified. Defaults to '2000k'.")
+    parser.add_argument("-vb", "--videobitrate", help="Video bitrate setting. Auto-detected from original video unless specified.")
+    parser.add_argument("-ab", "--audiobitrate", help="Audio bitrate setting. Auto-detected from original video unless specified.")
     args = parser.parse_args()
 
     estruct = edl.EDL(args.edlfile)
@@ -90,34 +92,22 @@ def main():
     else:
         ffmpegPreset = args.preset
 
-    try:
-        tmpf = tempfile.NamedTemporaryFile()
-        os.system("ffmpeg -i \"%s\" 2> %s" % (args.infile, tmpf.name))
-        lines = tmpf.readlines()
-        tmpf.close()
-
-        for l in lines:
-            l = l.strip()
-            if l.startswith(b'Duration'):
-                videoBitrate = (re.search(b"bitrate: (\d+ kb/s)", l).group(0).split(b':')[1].strip().split(b' ')[0]).decode('utf-8')+"k"
-
-            if l.startswith(b'Stream #0:1'):
-                audioBitrate = (re.search(b', (\d+ kb/s)', l).group(1)).strip().split(b' ')[0].decode('utf-8')+"k"
-
-    except:
-        videoBitrate = "2000k"
-        audioBitrate = "400k"
-
-
-    if args.bitrate == None:
+    mi = MediaInfo.parse(args.infile)
+    if args.videobitrate == None:
+        videoBitrate = str(int(mi.tracks[1].bit_rate / 1000)) + "k"
         print("Using original video bitrate: "+videoBitrate)
     else:
-        videoBitrate = args.bitrate
+        videoBitrate = args.videobitrate
         if videoBitrate[-1] != 'k':
             videoBitrate = videoBitrate+'k'
 
-    if audioBitrate == "" or audioBitrate == " ":
-        audioBitrate = "400k"
+    if args.audiobitrate == None:
+        audioBitrate = str(int(mi.tracks[2].bit_rate / 1000)) + "k"
+        print("Using original audio bitrate: "+audioBitrate)
+    else:
+        audioBitrate = args.audiobitrate
+        if audioBitrate[-1] != 'k':
+            audioBitrate = audioBitrate+'k'
 
     render(args.infile, estruct, args.outfile, videoBitrate, audioBitrate, threadNum, ffmpegPreset)
 
