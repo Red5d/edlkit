@@ -7,14 +7,22 @@ def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k
     global prevTime
     prevTime = 0
     actionTime = False
-    clips = VideoFileClip(videofile).subclip(0,0) #blank 0-time clip
+    v = VideoFileClip(videofile)
+    duration = v.duration
+    clips = v.subclip(0,0) #blank 0-time clip
 
     for edit in estruct.edits:
         nextTime = float(edit.time1)
         time2 = float(edit.time2)
         action = edit.action
 
-        clip = VideoFileClip(videofile).subclip(prevTime,nextTime)
+        if nextTime > duration:
+            nextTime = duration
+
+        if prevTime > duration:
+            prevTime = duration
+
+        clip = v.subclip(prevTime,nextTime)
         clips = concatenate([clips,clip])
         print("created subclip from " + str(prevTime) + " to " + str(nextTime))
 
@@ -37,7 +45,7 @@ def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k
 
         elif action == "2":
             # Cut audio and speed up video to cover it.
-            v = VideoFileClip(videofile)
+            #v = VideoFileClip(videofile)
 
             # Create two clips. One for the cut segment, one immediately after of equal length for use in the speedup.
             s1 = v.subclip(prevTime,nextTime).without_audio()
@@ -52,15 +60,18 @@ def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k
 
         else:
             # No edit action. Just put the clips together and continue.
-            clip = VideoFileClip(videofile).subclip(prevTime,nextTime)
+            clip = v.subclip(prevTime,nextTime)
             clips = concatenate([clips,clip])
 
             # Advance to next segment time.
             prevTime = nextTime
 
 
-    videoLength = VideoFileClip(videofile).duration
-    clip = VideoFileClip(videofile).subclip(prevTime,videoLength)
+    videoLength = duration
+    if prevTime > duration:
+        prevTime = duration
+
+    clip = v.subclip(prevTime,videoLength)
     print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
     clips = concatenate([clips,clip])
     clips.write_videofile(outfile, codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset, write_logfile=writeLogfile)
@@ -102,7 +113,11 @@ def main():
             videoBitrate = videoBitrate+'k'
 
     if args.audiobitrate == None:
-        audioBitrate = str(int(mi.tracks[2].bit_rate / 1000)) + "k"
+        try:
+            audioBitrate = str(int(mi.tracks[2].bit_rate / 1000)) + "k"
+        except TypeError:
+            audioBitrate = str(int(int(mi.tracks[2].bit_rate.split(' / ')[1]) / 1000)) + "k"
+
         print("Using original audio bitrate: "+audioBitrate)
     else:
         audioBitrate = args.audiobitrate
