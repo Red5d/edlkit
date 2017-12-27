@@ -13,6 +13,7 @@ num2 = 0
 action2 = 0
 
 playing_original = False
+redo_seconds = 0
 
 root = Tk()
 root.title("EDL Kit: Tweaker")
@@ -79,8 +80,11 @@ else:
     vlc.connect_ex(('127.0.0.1', 12000))
 
 def rewind():
-    vlc.send(bytes('prev\n', 'UTF-8'))
-    vlc.send(bytes('play\n', 'UTF-8'))
+    if redo_seconds == 0:
+        vlc.send(bytes('prev\n', 'UTF-8'))
+        vlc.send(bytes('play\n', 'UTF-8'))
+    else:
+        vlc.send(('seek '+str(redo_seconds)+'\n').encode())        
     
 def play_pause():
     vlc.send('pause\n'.encode())
@@ -94,13 +98,24 @@ def reload():
     vlc.send('clear\n'.encode())
     vlc.send('add /tmp/tweak.mp4\n'.encode())
     global playing_original
+    global redo_seconds
     playing_original = False
+    redo_seconds = 0
 
 def load_original():
     vlc.send('clear\n'.encode())
     vlc.send(('add '+videofile+'\n').encode())
     global playing_original
+    global redo_seconds
     playing_original = True
+    redo_seconds = 0
+
+def redo_mark(seconds):
+    vlc.send('clear\n'.encode())
+    vlc.send(('add '+videofile+'\n').encode())
+    global redo_seconds
+    redo_seconds = seconds
+    vlc.send(('seek '+str(seconds)+'\n').encode())
     
 vlc.recv(2048)
 def getTime():
@@ -211,43 +226,43 @@ struct.configure(yscrollcommand=s.set)
 
 def createClip(start, end, time1, time2, action):
     #print("Action: "+action)
-
-    clip1 = VideoFileClip(videofile).subclip(start,time1)
+    v = VideoFileClip(videofile)
+    clip1 = v.subclip(start,time1)
 
     if str(action) == "1":
-        if time2 > VideoFileClip(videofile).duration:
-            end = VideoFileClip(videofile).duration
+        if time2 > v.duration:
+            end = v.duration
             time2 = end
 
         clip2 = VideoFileClip(videofile, audio = False).subclip(time1,time2)
-        clip3 = VideoFileClip(videofile).subclip(time2,end)
+        clip3 = v.subclip(time2,end)
         clips = concatenate([clip1,clip2,clip3])
     elif str(action) == "0":
-        if time2 > VideoFileClip(videofile).duration:
-            end = VideoFileClip(videofile).duration
+        if time2 > v.duration:
+            end = v.duration
             time2 = end
 
-        clip3 = VideoFileClip(videofile).subclip(time2,end)
+        clip3 = v.subclip(time2,end)
         clips = concatenate([clip1,clip3])
     elif str(action) == "2":
-        if time2 > VideoFileClip(videofile).duration:
-            end = VideoFileClip(videofile).duration
+        if time2 > v.duration:
+            end = v.duration
             time2 = end
             
-        s1 = VideoFileClip(videofile).subclip(time1,time2).without_audio()
-        s2 = VideoFileClip(videofile).subclip(time2, (time2 + s1.duration))
+        s1 = v.subclip(time1,time2).without_audio()
+        s2 = v.subclip(time2, (time2 + s1.duration))
         clip2 = concatenate([s1,s2.without_audio()]).speedx(final_duration=s1.duration).set_audio(s2.audio)
-        clip3 = VideoFileClip(videofile).subclip((time2 + s1.duration),end)
+        clip3 = v.subclip((time2 + s1.duration),end)
         clips = concatenate([clip1,clip2,clip3])
     else:
-        if time2 > VideoFileClip(videofile).duration:
-            end = VideoFileClip(videofile).duration
+        if time2 > v.duration:
+            end = v.duration
             time2 = end
 
-        clips = VideoFileClip(videofile).subclip(start,end)
+        clips = v.subclip(start,end)
         
-
-    clips.write_videofile("/tmp/tweak.mp4", codec="libx264", fps=24, preset="ultrafast", threads=2)
+    print("Creating clip with modified center from "+str(time1)+" to "+str(time2))
+    clips.write_videofile("/tmp/tweak.mp4", codec="libx264", fps=24, preset="ultrafast", threads=5)
     reload()
 
 
@@ -375,6 +390,12 @@ def keyCommand(e):
             time1 = float(int(getTime()))
             estruct.add(time1-1, time1-0.5, 1)
             show_struct()
+        elif redo_seconds != 0:
+            time1 = float(int(getTime()))
+            num1 = time1
+            t1value.set("{0:.2f}".format(num1))
+            num2 = time1+0.5
+            t2value.set("{0:.2f}".format(num2))
         else:
             num2 = num2-0.10
             t2value.set("{0:.2f}".format(num2))
@@ -407,7 +428,17 @@ def keyCommand(e):
     elif key == 'r':
         statusvalue.set("Reloading Edit...")
         root.update()
-        createClip(num1-3, num2+3, num1, num2, action2)
+        if num1-3 <= 0:
+            num1before = 0
+        else:
+            num1before = num1-3
+
+        if num2+3 >= VideoFileClip(videofile).duration:
+            num2after = VideoFileClip(videofile).duration-3
+        else:
+            num2after = num2+3
+
+        createClip(num1before, num2after, num1, num2, action2)
         statusvalue.set("Ready")
         #if str(action2) == "1":
         #    stdscr.addstr(5, 30, "Set to mute mode.")
@@ -422,6 +453,11 @@ def keyCommand(e):
         play_pause()
     elif key == 'o':
         load_original()
+    elif key == 'y':
+        if int(float(t1value.get()))-6 <= 0:
+            redo_mark(0)
+        else:
+            redo_mark(int(float(t1value.get()))-6)
     elif key == '[':
         if editline != 0:
             editline = editline-1
