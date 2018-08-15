@@ -2,7 +2,7 @@ from moviepy.editor import *
 import sys, os, re, edl, tempfile, argparse
 from pymediainfo import MediaInfo
 
-def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k", threadNum=2, ffmpegPreset="medium", writeLogfile=False):
+def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k", threadNum=2, ffmpegPreset="medium", vcodec=None, acodec=None, ffmpeg_params=None, writeLogfile=False):
     clipNum = 1
     global prevTime
     prevTime = 0
@@ -71,10 +71,15 @@ def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k
     if prevTime > duration:
         prevTime = duration
 
+    if ffmpeg_params != None:
+        fparams = []
+        for x in ffmpeg_params.split(' '):
+            fparams.extend(x.split('='))
+
     clip = v.subclip(prevTime,videoLength)
     print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
     clips = concatenate([clips,clip])
-    clips.write_videofile(outfile, codec="libx264", fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, threads=threadNum, preset=ffmpegPreset, write_logfile=writeLogfile)
+    clips.write_videofile(outfile, codec=vcodec, fps=24, bitrate=videoBitrate, audio_bitrate=audioBitrate, audio_codec=acodec, ffmpeg_params=fparams, threads=threadNum, preset=ffmpegPreset, write_logfile=writeLogfile)
 
 
 def main():
@@ -86,6 +91,9 @@ def main():
     parser.add_argument("-p", "--preset", choices=["ultrafast", "superfast", "fast", "medium", "slow", "superslow"], help="FFMPEG preset to use for optimizing the compression. Defaults to 'medium'.")
     parser.add_argument("-vb", "--videobitrate", help="Video bitrate setting. Auto-detected from original video unless specified.")
     parser.add_argument("-ab", "--audiobitrate", help="Audio bitrate setting. Auto-detected from original video unless specified.")
+    parser.add_argument("-vc", "--vcodec", help="Video codec to use.")
+    parser.add_argument("-ac", "--acodec", help="Audio codec to use.")
+    parser.add_argument("-fp", "--ffmpegparams", help="Additional FFMpeg parameters to use.")
     args = parser.parse_args()
 
     estruct = edl.EDL(args.edlfile)
@@ -124,7 +132,7 @@ def main():
         if audioBitrate[-1] != 'k':
             audioBitrate = audioBitrate+'k'
 
-    render(args.infile, estruct, args.outfile, videoBitrate, audioBitrate, threadNum, ffmpegPreset)
+    render(args.infile, estruct, args.outfile, videoBitrate, audioBitrate, threadNum=threadNum, vcodec=args.vcodec, acodec=args.acodec, ffmpeg_params=args.ffmpegparams, ffmpegPreset=ffmpegPreset)
 
 
 if __name__ == "__main__":
