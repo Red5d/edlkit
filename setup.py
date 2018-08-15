@@ -8,8 +8,8 @@ setup(
     license = "GPLv2",
     keywords = "video edl ffmpeg moviepy edit editing",
     
-    packages = find_packages(),
-    install_requires = ['moviepy>=0.2.2'],
+    py_modules = ['edl', 'Stopwatch'],
+    install_requires = ['moviepy>=0.2.3.5', 'pymediainfo>=2.3.0'],
     scripts = ['edledit.py', 'edlcreate.py', 'edlcreate_timer.py', 'edltweak_gui.py'],
     entry_points={
         'console_scripts': [
