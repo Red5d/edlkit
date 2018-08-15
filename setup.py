@@ -10,7 +10,7 @@ setup(
     
     py_modules = ['edl', 'Stopwatch'],
     install_requires = ['moviepy>=0.2.3.5', 'pymediainfo>=2.3.0'],
-    scripts = ['edledit.py', 'edlcreate.py', 'edlcreate_timer.py', 'edltweak_gui.py'],
+    scripts = ['edledit.py', 'edlcreate.py', 'edlcreate_timer.py', 'edltweak_gui.py', 'edltweak_gui-mpv.py'],
     entry_points={
         'console_scripts': [
             'edledit = edledit:main',
@@ -19,6 +19,7 @@ setup(
         ],
         'gui_scripts': [
             'edltweak_gui = edltweak_gui',
+            'edltweak_gui-mpv = edltweak_gui-mpv'
         ]
     }
 )
