@@ -19,7 +19,7 @@ setup(
         ],
         'gui_scripts': [
             'edltweak_gui = edltweak_gui',
-            'edltweak_gui-mpv = edltweak_gui-mpv'
+            'edltweak_gui_mpv = edltweak_gui_mpv'
         ]
     }
 )
