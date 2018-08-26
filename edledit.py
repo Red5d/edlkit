@@ -75,6 +75,8 @@ def render(videofile, estruct, outfile, videoBitrate="2000k", audioBitrate="400k
         fparams = []
         for x in ffmpeg_params.split(' '):
             fparams.extend(x.split('='))
+    else:
+        fparams = None
 
     clip = v.subclip(prevTime,videoLength)
     print("created ending clip from " + str(prevTime) + " to " + str(videoLength))
@@ -93,7 +95,7 @@ def main():
     parser.add_argument("-ab", "--audiobitrate", help="Audio bitrate setting. Auto-detected from original video unless specified.")
     parser.add_argument("-vc", "--vcodec", help="Video codec to use.")
     parser.add_argument("-ac", "--acodec", help="Audio codec to use.")
-    parser.add_argument("-fp", "--ffmpegparams", help="Additional FFMpeg parameters to use.")
+    parser.add_argument("-fp", "--ffmpegparams", help="Additional FFMpeg parameters to use. Example: '-crf=24 -s=640x480'.")
     args = parser.parse_args()
 
     estruct = edl.EDL(args.edlfile)
